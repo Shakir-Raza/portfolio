@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Portfolio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">dev<span>.</span>folio</div>
+  <div class="nav-links">
+    <a href="/">Work</a>
+    <a href="/admin">Admin</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-tag">✦ Available for work</div>
+  <h1>I build things<br>for the <span>web.</span></h1>
+  <p>A collection of my projects, experiments, and side quests. Each one built with purpose.</p>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <span class="section-title">✦ Selected Projects</span>
+    <span class="section-title">{{ projects|length }} projects</span>
+  </div>
+
+  {% if projects %}
+  <div class="projects-grid">
+    {% for project in projects %}
+    <a href="/projects/{{ project.slug }}" class="project-card">
+      {% if project.image_url %}
+        <img src="{{ project.image_url }}" alt="{{ project.title }}" class="card-image"/>
+      {% else %}
+        <div class="card-image-placeholder">⬡</div>
+      {% endif %}
+      <div class="card-body">
+        <div class="card-title">{{ project.title }}</div>
+        <div class="card-desc">{{ project.description }}</div>
+        {% if project.tags %}
+        <div class="card-tags">
+          {% for tag in project.tags %}
+          <span class="tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="card-links">
+          {% if project.live_url %}
+          <span class="btn btn-accent">Live Demo →</span>
+          {% endif %}
+          {% if project.github_url %}
+          <span class="btn btn-outline">GitHub</span>
+          {% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="big">⬡</div>
+    <p>No projects yet. <a href="/admin" style="color: var(--accent)">Add your first one →</a></p>
+  </div>
+  {% endif %}
+</section>
+
+<footer>
+  Built with Flask + Supabase &mdash; © 2026
+</footer>
+
+</body>
+</html>

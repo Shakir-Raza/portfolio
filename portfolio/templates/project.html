@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ project.title }} — Portfolio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">dev<span>.</span>folio</div>
+  <div class="nav-links">
+    <a href="/">Work</a>
+    <a href="/admin">Admin</a>
+  </div>
+</nav>
+
+<div class="detail-container">
+  <a href="/" class="back-link">← Back to all projects</a>
+
+  <h1 class="detail-title">{{ project.title }}</h1>
+
+  {% if project.tags %}
+  <div class="card-tags" style="margin-bottom: 1.5rem;">
+    {% for tag in project.tags %}
+    <span class="tag">{{ tag }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if project.image_url %}
+  <img src="{{ project.image_url }}" alt="{{ project.title }}" class="detail-image"/>
+  {% endif %}
+
+  <p class="detail-desc">{{ project.description }}</p>
+
+  <div class="detail-links">
+    {% if project.live_url %}
+    <a href="{{ project.live_url }}" target="_blank" class="btn btn-accent">Live Demo →</a>
+    {% endif %}
+    {% if project.github_url %}
+    <a href="{{ project.github_url }}" target="_blank" class="btn btn-outline">View on GitHub</a>
+    {% endif %}
+  </div>
+</div>
+
+<footer>
+  Built with Flask + Supabase &mdash; © 2026
+</footer>
+
+</body>
+</html>
