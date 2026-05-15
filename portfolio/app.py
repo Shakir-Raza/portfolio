@@ -80,16 +80,22 @@ def add_project():
     # Handle image upload
     image = request.files.get("image")
     if image and image.filename:
-        file_bytes = image.read()
-        file_ext = image.filename.rsplit(".", 1)[-1]
-        file_name = f"{slug}.{file_ext}"
-        supabase.storage.from_("project-images").upload(
-            path=file_name,
-            file=file_bytes,
-            file_options={"content-type": image.content_type, "upsert": True}
+        try:
+            
+            
+            file_bytes = image.read()
+            file_ext = image.filename.rsplit(".", 1)[-1]
+            file_name = f"{slug}.{file_ext}"
+            supabase.storage.from_("project-images").upload(
+                path=file_name,
+                file=file_bytes,
+                file_options={"content-type": image.content_type, "upsert": True}
 )
-        supabase_url = os.getenv("SUPABASE_URL")
-        image_url = f"{supabase_url}/storage/v1/object/public/project-images/{file_name}"
+            supabase_url = os.getenv("SUPABASE_URL")
+            image_url = f"{supabase_url}/storage/v1/object/public/project-images/{file_name}"
+        except Exception as e:
+            print(f"IMAGE UPLOAD ERROR: {e}")
+            image_url = ""
 
     supabase.table("projects").insert({
         "title": title,
