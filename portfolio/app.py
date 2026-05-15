@@ -83,7 +83,7 @@ def add_project():
         try:
             
             
-            file_bytes = image.read()
+            file_bytes = image.read()   
             file_ext = image.filename.rsplit(".", 1)[-1]
             file_name = f"{slug}.{file_ext}"
             supabase.storage.from_("project-images").upload(
