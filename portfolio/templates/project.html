@@ -6,7 +6,10 @@
   <title>{{ project.title }} — Portfolio</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
+
 <body>
+
 
 <nav>
   <div class="nav-logo">SR</div>
@@ -27,9 +30,27 @@
   </div>
   {% endif %}
 
-  {% if project.image_url %}
-  <img src="{{ project.image_url }}" alt="{{ project.title }}" class="detail-image"/>
-  {% endif %}
+ {% if project.images and project.images|length > 1 %}
+<div class="slideshow">
+  <div class="slideshow-track" id="slideshowTrack">
+    {% for img in project.images %}
+    <div class="slide {% if loop.first %}active{% endif %}">
+      <img src="{{ img }}" alt="{{ project.title }} screenshot {{ loop.index }}"/>
+    </div>
+    {% endfor %}
+  </div>
+  <button class="slide-btn prev" onclick="changeSlide(-1)">&#8592;</button>
+  <button class="slide-btn next" onclick="changeSlide(1)">&#8594;</button>
+  <div class="slide-dots" id="slideDots">
+    {% for img in project.images %}
+    <div class="dot {% if loop.first %}active{% endif %}" onclick="goSlide({{ loop.index0 }})"></div>
+    {% endfor %}
+  </div>
+  <div class="slide-counter" id="slideCounter">1 / {{ project.images|length }}</div>
+</div>
+{% elif project.image_url %}
+<img src="{{ project.image_url }}" alt="{{ project.title }}" class="detail-image"/>
+{% endif %}
 
   <p class="detail-desc">{{ project.description }}</p>
 
@@ -46,6 +67,29 @@
 <footer>
   Built with Flask + Supabase &mdash; © 2026
 </footer>
+
+<script>
+  let cur = 0;
+  const slides = document.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  const counter = document.getElementById('slideCounter');
+
+  function updateSlider() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
+    if (counter) counter.textContent = `${cur + 1} / ${slides.length}`;
+  }
+
+  function changeSlide(dir) {
+    cur = (cur + dir + slides.length) % slides.length;
+    updateSlider();
+  }
+
+  function goSlide(n) {
+    cur = n;
+    updateSlider();
+  }
+</script>
 
 </body>
 </html>

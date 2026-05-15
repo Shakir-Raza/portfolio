@@ -78,24 +78,29 @@ def add_project():
     image_url = ""
 
     # Handle image upload
-    image = request.files.get("image")
-    if image and image.filename:
-        try:
-            
-            
-            file_bytes = image.read()   
-            file_ext = image.filename.rsplit(".", 1)[-1]
-            file_name = f"{slug}.{file_ext}"
-            supabase.storage.from_("project-images").upload(
-                path=file_name,
-                file=file_bytes,
-                file_options={"content-type": image.content_type, "upsert": "true"}
-)
-            supabase_url = os.getenv("SUPABASE_URL")
-            image_url = f"{supabase_url}/storage/v1/object/public/project-images/{file_name}"
-        except Exception as e:
-            print(f"IMAGE UPLOAD ERROR: {e}")
-            image_url = ""
+    # Handle multiple image uploads
+    images = request.files.getlist("images")
+    image_urls = []
+    image_url = ""
+
+    for i, image in enumerate(images):
+        if image and image.filename:
+            try:
+                file_bytes = image.read()
+                file_ext = image.filename.rsplit(".", 1)[-1].lower()
+                file_name = f"{slug}-{i}.{file_ext}"
+                supabase.storage.from_("project-images").upload(
+                    file_name,
+                    file_bytes,
+                    {"content-type": image.content_type, "upsert": "true"}
+                )
+                supabase_url = os.getenv("SUPABASE_URL")
+                url = f"{supabase_url}/storage/v1/object/public/project-images/{file_name}"
+                image_urls.append(url)
+                if i == 0:
+                    image_url = url
+            except Exception as e:
+                print("Image upload error:", e)
 
     supabase.table("projects").insert({
         "title": title,
@@ -104,9 +109,9 @@ def add_project():
         "github_url": github_url,
         "tags": tags,
         "slug": slug,
-        "image_url": image_url
+        "image_url": image_url,
+        "images": image_urls
     }).execute()
-
     flash("Project added successfully!")
     return redirect(url_for("admin"))
 

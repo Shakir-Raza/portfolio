@@ -57,8 +57,9 @@
           <input type="text" name="tags" placeholder="Python, Flask, Supabase"/>
         </div>
         <div class="form-group">
-          <label>Project Image</label>
-          <input type="file" name="image" accept="image/*"/>
+          <label>Project Images (select multiple)</label>
+          <input type="file" name="images" accept="image/*" multiple/>
+          <small style="color: var(--muted); font-size: 0.75rem; margin-top: 0.3rem; display: block;">First image will be used as thumbnail</small>
         </div>
         <button type="submit" class="btn btn-accent" style="width:100%; padding:0.8rem; margin-top:0.5rem;">
           Add Project →
