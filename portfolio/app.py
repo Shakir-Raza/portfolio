@@ -89,7 +89,7 @@ def add_project():
             supabase.storage.from_("project-images").upload(
                 path=file_name,
                 file=file_bytes,
-                file_options={"content-type": image.content_type, "upsert": True}
+                file_options={"content-type": image.content_type, "upsert": true}
 )
             supabase_url = os.getenv("SUPABASE_URL")
             image_url = f"{supabase_url}/storage/v1/object/public/project-images/{file_name}"
