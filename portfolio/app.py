@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from supabase import create_client
 from dotenv import load_dotenv
+import google.generativeai as genai
 import os
 import re
 
@@ -14,7 +15,49 @@ supabase = create_client(
     os.getenv("SUPABASE_KEY")
 )
 
+supabase_admin = create_client(
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_KEY")
+)
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+SYSTEM_PROMPT = """
+You are Shakir Raza's personal AI assistant on his portfolio website.
+Answer questions about Shakir naturally and helpfully.
+
+About Shakir:
+- Name: Shakir Raza
+- Location: Karachi, Pakistan
+- He is a CS student passionate about technology
+- Specializes in Full Stack Development, AI/ML, and Data Science
+- Currently building projects to sharpen his skills and showcase them
+
+Skills:
+- Python, Flask, HTML/CSS, Jinja2
+- Tkinter for desktop apps
+- AI/ML with Scikit-learn, Pandas, NumPy
+- Data Science and data analysis
+- SQL and Supabase
+- Git and GitHub
+
+Projects:
+- Library Management System: Desktop app built with Python & Tkinter using BST and Queue data structures. Has role-based login for librarians and users.
+- Snake Game: Classic snake game built with Python and Pygame
+- Portfolio Website: This website! Built with Flask, Supabase, and deployed on Railway
+
+Contact:
+- Email: razashakir919@gmail.com
+- GitHub: https://github.com/Shakir-Raza
+- LinkedIn: https://www.linkedin.com/in/shakir-raza
+
+Availability: Shakir is currently available for work and open to exciting opportunities.
+
+Keep answers short, friendly and helpful. If asked something unrelated to Shakir, 
+politely redirect the conversation back to Shakir's work and skills.
+"""
 
 def slugify(text):
     text = text.lower()
@@ -22,7 +65,7 @@ def slugify(text):
     text = re.sub(r'[\s_-]+', '-', text)
     return text.strip('-')
 
-# ─── PUBLIC ROUTES ───────────────────────────────────────
+# ── PUBLIC ROUTES ──────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -36,9 +79,42 @@ def project_detail(slug):
     if not result.data:
         return "Project not found", 404
     project = result.data[0]
+    # increment view count
+    views = (project.get("views") or 0) + 1
+    supabase.table("projects").update({"views": views}).eq("slug", slug).execute()
+    project["views"] = views
     return render_template("project.html", project=project)
 
-# ─── ADMIN ROUTES ─────────────────────────────────────────
+# ── CHATBOT ROUTE ──────────────────────────────────────────
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        data = request.get_json()
+        user_message = data.get("message", "")
+        history = data.get("history", [])
+
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=SYSTEM_PROMPT
+        )
+
+        chat_history = []
+        for msg in history:
+            chat_history.append({
+                "role": msg["role"],
+                "parts": [msg["content"]]
+            })
+
+        chat_session = model.start_chat(history=chat_history)
+        response = chat_session.send_message(user_message)
+
+        return jsonify({"reply": response.text})
+    except Exception as e:
+        print("Chat error:", e)
+        return jsonify({"reply": "Sorry, I'm having trouble right now. Please try again!"})
+
+# ── ADMIN ROUTES ───────────────────────────────────────────
 
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
@@ -74,22 +150,19 @@ def add_project():
     live_url = request.form.get("live_url")
     github_url = request.form.get("github_url")
     tags = [t.strip() for t in request.form.get("tags", "").split(",") if t.strip()]
+    category = request.form.get("category", "other")
     slug = slugify(title)
     image_url = ""
-
-    # Handle image upload
-    # Handle multiple image uploads
-    images = request.files.getlist("images")
     image_urls = []
-    image_url = ""
 
+    images = request.files.getlist("images")
     for i, image in enumerate(images):
         if image and image.filename:
             try:
                 file_bytes = image.read()
                 file_ext = image.filename.rsplit(".", 1)[-1].lower()
                 file_name = f"{slug}-{i}.{file_ext}"
-                supabase.storage.from_("project-images").upload(
+                supabase_admin.storage.from_("project-images").upload(
                     file_name,
                     file_bytes,
                     {"content-type": image.content_type, "upsert": "true"}
@@ -110,8 +183,11 @@ def add_project():
         "tags": tags,
         "slug": slug,
         "image_url": image_url,
-        "images": image_urls
+        "images": image_urls,
+        "category": category,
+        "views": 0
     }).execute()
+
     flash("Project added successfully!")
     return redirect(url_for("admin"))
 
