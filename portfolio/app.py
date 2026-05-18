@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from supabase import create_client
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 import re
 
@@ -20,7 +21,7 @@ supabase_admin = create_client(
     os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_KEY")
 )
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
