@@ -634,6 +634,7 @@ footer {
   background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .contact-btn {
@@ -1179,4 +1180,39 @@ footer {
 .chatbot-input button:hover {
   background: #0d2a5c;
   border-color: rgba(0,102,255,0.5);
+}
+
+
+.hero-about {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-about-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0a1f44, #0d2a5c);
+  border: 1px solid rgba(0,102,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  color: #4da6ff;
+  letter-spacing: 2px;
+}
+
+.hero-about-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.hero-about-loc {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 2px;
 }

@@ -9,7 +9,7 @@
 <body>
 
 <nav>
-  <div class="nav-logo">Shakir<span>.</span>folio</div>
+  <a href="/" class="nav-logo">S<span>R</span></a>
   <div class="nav-links">
     <a href="/">View Site</a>
     <a href="/admin/logout" class="btn btn-outline">Logout</a>
@@ -61,17 +61,6 @@
           <input type="file" name="images" accept="image/*" multiple/>
           <small style="color: var(--muted); font-size: 0.75rem; margin-top: 0.3rem; display: block;">First image will be used as thumbnail</small>
         </div>
-        <div class="form-group">
-          <label>Category</label>
-          <select name="category">
-            <option value="python">Python</option>
-            <option value="web">Web</option>
-            <option value="ai">AI/ML</option>
-            <option value="dsa">DSA</option>
-            <option value="data">Data Science</option>
-            <option value="other">Other</option>
-        </select>
-      </div>
         <button type="submit" class="btn btn-accent" style="width:100%; padding:0.8rem; margin-top:0.5rem;">
           Add Project →
         </button>
@@ -107,6 +96,20 @@
     </div>
 
   </div>
+<!-- CV UPLOAD -->
+  <div class="admin-form-box" style="margin-top: 2rem;">
+    <h2>Upload CV</h2>
+    <form method="POST" action="/admin/upload-cv" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>CV File (PDF)</label>
+        <input type="file" name="cv" accept=".pdf"/>
+      </div>
+      <button type="submit" class="btn btn-accent" style="width:100%; padding:0.8rem;">
+      Upload CV →
+      </button>
+    </form>
+  </div>
+
 </div>
 
 <footer>

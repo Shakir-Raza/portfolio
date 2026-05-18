@@ -95,7 +95,7 @@ def chat():
         history = data.get("history", [])
 
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-2.0-flash",
             system_instruction=SYSTEM_PROMPT
         )
 
@@ -197,6 +197,16 @@ def delete_project(id):
         return redirect(url_for("login"))
     supabase.table("projects").delete().eq("id", id).execute()
     flash("Project deleted!")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/upload-cv", methods=["POST"])
+def upload_cv():
+    if not session.get("admin"):
+        return redirect(url_for("login"))
+    cv = request.files.get("cv")
+    if cv and cv.filename:
+        cv.save(os.path.join("static", "cv.pdf"))
+        flash("CV uploaded successfully!")
     return redirect(url_for("admin"))
 
 if __name__ == "__main__":
