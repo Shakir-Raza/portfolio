@@ -95,26 +95,35 @@ def chat():
         user_message = data.get("message", "")
         history = data.get("history", [])
 
-        model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
-            system_instruction=SYSTEM_PROMPT
-        )
-
         chat_history = []
         for msg in history:
-            chat_history.append({
-                "role": msg["role"],
-                "parts": [msg["content"]]
-            })
+            role = "user" if msg["role"] == "user" else "model"
+            chat_history.append(
+                types.Content(
+                    role=role,
+                    parts=[types.Part(text=msg["content"])]
+                )
+            )
 
-        chat_session = model.start_chat(history=chat_history)
-        response = chat_session.send_message(user_message)
+        response = client.models.generate_content(
+            model="gemini-1.5-flash-8b",
+            contents=chat_history + [
+                types.Content(
+                    role="user",
+                    parts=[types.Part(text=user_message)]
+                )
+            ],
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+                max_output_tokens=500,
+                temperature=0.7
+            )
+        )
 
         return jsonify({"reply": response.text})
     except Exception as e:
         print("Chat error:", e)
         return jsonify({"reply": "Sorry, I'm having trouble right now. Please try again!"})
-
 # ── ADMIN ROUTES ───────────────────────────────────────────
 
 @app.route("/admin", methods=["GET", "POST"])
