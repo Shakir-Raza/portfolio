@@ -106,7 +106,7 @@ def chat():
             )
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash-8b",
+            model="gemini-2.0-flash-lite",
             contents=chat_history + [
                 types.Content(
                     role="user",
