@@ -55,8 +55,7 @@ Contact:
 
 Availability: Shakir is currently available for work and open to exciting opportunities.
 
-Keep answers short, friendly and helpful. If asked something unrelated to Shakir, 
-politely redirect the conversation back to Shakir's work and skills.
+Remember: SHORT answers only. 2-3 sentences maximum. No bullet points ever.
 """
 
 def slugify(text):
