@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from supabase import create_client
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from groq import Groq
 import os
 import re
 
@@ -21,7 +20,7 @@ supabase_admin = create_client(
     os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_KEY")
 )
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
@@ -95,31 +94,29 @@ def chat():
         user_message = data.get("message", "")
         history = data.get("history", [])
 
-        chat_history = []
-        for msg in history:
-            role = "user" if msg["role"] == "user" else "model"
-            chat_history.append(
-                types.Content(
-                    role=role,
-                    parts=[types.Part(text=msg["content"])]
-                )
-            )
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-lite",
-            contents=chat_history + [
-                types.Content(
-                    role="user",
-                    parts=[types.Part(text=user_message)]
-                )
-            ],
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                max_output_tokens=500,
-                temperature=0.7
-            )
+        for msg in history:
+            messages.append({
+                "role": msg["role"] if msg["role"] == "user" else "assistant",
+                "content": msg["content"]
+            })
+
+        messages.append({"role": "user", "content": user_message})
+
+        response = groq_client.chat.completions.create(
+            model="llama3-8b-8192",
+            messages=messages,
+            max_tokens=500,
+            temperature=0.7
         )
 
+        reply = response.choices[0].message.content
+        return jsonify({"reply": reply})
+
+    except Exception as e:
+        print("Chat error:", e)
+        return jsonify({"reply": "Sorry, I'm having trouble right now. Please try again!"})
         return jsonify({"reply": response.text})
     except Exception as e:
         print("Chat error:", e)
