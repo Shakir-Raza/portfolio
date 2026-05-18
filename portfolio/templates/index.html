@@ -12,46 +12,16 @@
   <a href="/" class="nav-logo">S<span>R</span></a>
   <div class="nav-links">
     <a href="#projects">Work</a>
-    <a href="#about">About</a>
+    <a href="/about">About</a>
     <button class="contact-btn" onclick="openContact()">Contact</button>
   </div>
 </nav>
 
-<!-- ABOUT -->
-<section class="section" id="about">
-  <div class="section-header">
-    <span class="section-title">✦ About Me</span>
-  </div>
-  <div class="about-box">
-    <div class="about-avatar">SR</div>
-    <div class="about-content">
-      <h2 class="about-name">Shakir Raza</h2>
-      <p class="about-bio">I'm a Computer Science student from Karachi, Pakistan with a passion for building things that matter. Currently focused on Full Stack Development, AI/ML, and Data Science — turning ideas into real, working projects. I believe in learning by doing, which is why every project in this portfolio represents a real challenge I've tackled head on.</p>
-      <div class="about-links">
-        <a href="https://github.com/Shakir-Raza" target="_blank" class="btn btn-outline">GitHub →</a>
-        <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" class="btn btn-outline">LinkedIn →</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-
 <!-- HERO -->
 <section class="hero">
   <div class="hero-tag"><span class="pulse-dot"></span> Available for work</div>
-  <div class="hero-subtitle">Developer | AI/ML | Data Science</div>
-
-  <!-- ABOUT AT TOP -->
-  <div class="hero-about">
-    <div class="hero-about-avatar">SR</div>
-    <div class="hero-about-text">
-      <div class="hero-about-name">Shakir Raza</div>
-      <div class="hero-about-loc">📍 Karachi, Pakistan</div>
-    </div>
-  </div>
-
-  <h1>I build things<br>for the <span>future.</span></h1>
-  <p>A CS student from Karachi, Pakistan — building full stack apps, exploring AI/ML, and diving deep into data science. Each project is a step forward.</p>
+  <h1>Hi, I'm Shakir Raza —<br><span>CS student & developer</span></h1>
+  <p>Building full stack apps, exploring AI/ML, and diving deep into data science from Karachi, Pakistan. Each project is a step forward.</p>
   <div class="hero-btns">
     <a href="#projects" class="btn btn-accent">View Projects</a>
     <a href="/static/cv.pdf" download class="btn btn-outline">Download CV</a>
@@ -88,19 +58,10 @@
     <span class="section-title">{{ projects|length }} projects</span>
   </div>
 
-  <div class="filter-bar">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="python">Python</button>
-    <button class="filter-btn" data-filter="web">Web</button>
-    <button class="filter-btn" data-filter="ai">AI/ML</button>
-    <button class="filter-btn" data-filter="dsa">DSA</button>
-    <button class="filter-btn" data-filter="data">Data Science</button>
-  </div>
-
   {% if projects %}
   <div class="projects-grid" id="projectsGrid">
     {% for project in projects %}
-    <a href="/projects/{{ project.slug }}" class="project-card" data-category="{{ project.category or 'other' }}">
+    <a href="/projects/{{ project.slug }}" class="project-card">
       <div class="card-number">{{ '%02d' % loop.index }}</div>
       {% if project.image_url %}
         <img src="{{ project.image_url }}" alt="{{ project.title }}" class="card-image"/>
@@ -138,7 +99,6 @@
   </div>
   {% endif %}
 </section>
-
 
 <footer>
   <div class="footer-links">
@@ -187,7 +147,7 @@
 
 <!-- CHATBOT -->
 <div class="chatbot-wrap">
-  <button class="chatbot-btn" onclick="toggleChat()" id="chatBtn">
+  <button class="chatbot-btn" onclick="toggleChat()">
     <span class="chatbot-icon">✦</span>
     <span class="chatbot-notif"></span>
   </button>
@@ -196,7 +156,7 @@
       <div class="chatbot-avatar">SR</div>
       <div class="chatbot-header-info">
         <h4>Shakir's AI Assistant</h4>
-        <p><span class="chatbot-status"></span>Powered by Gemini</p>
+        <p><span class="chatbot-status"></span>Powered by Groq</p>
       </div>
       <button class="chatbot-close" onclick="toggleChat()">✕</button>
     </div>
@@ -225,7 +185,6 @@
 </div>
 
 <script>
-// Contact Modal
 function openContact() { document.getElementById('contactModal').classList.add('show'); }
 function closeContact() { document.getElementById('contactModal').classList.remove('show'); }
 function copyText(text, btn) {
@@ -234,23 +193,6 @@ function copyText(text, btn) {
   setTimeout(() => btn.textContent = 'Copy', 2000);
 }
 
-// Project Filter
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const filter = btn.dataset.filter;
-    document.querySelectorAll('.project-card').forEach(card => {
-      if (filter === 'all' || card.dataset.category === filter) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  });
-});
-
-// Chatbot
 let chatOpen = false;
 let chatHistory = [];
 
@@ -282,7 +224,7 @@ async function sendChat() {
     const data = await res.json();
     removeTyping();
     addChatMsg(data.reply, 'bot');
-    chatHistory.push({ role: 'model', content: data.reply });
+    chatHistory.push({ role: 'assistant', content: data.reply });
   } catch(e) {
     removeTyping();
     addChatMsg('Sorry, something went wrong. Please try again!', 'bot');

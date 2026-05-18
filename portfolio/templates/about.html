@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About — Shakir Raza</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">S<span>R</span></a>
+  <div class="nav-links">
+    <a href="/#projects">Work</a>
+    <a href="/about">About</a>
+    <button class="contact-btn" onclick="openContact()">Contact</button>
+  </div>
+</nav>
+
+<div class="about-page">
+
+  <div class="about-page-header">
+    <a href="/" class="back-link">← Back</a>
+    <div class="about-page-avatar">SR</div>
+    <h1 class="about-page-name">Shakir Raza</h1>
+    <p class="about-page-title">Developer | AI/ML | Data Science</p>
+    <p class="about-page-location">📍 Karachi, Pakistan</p>
+    <div class="about-page-status"><span class="pulse-dot"></span> Available for work</div>
+  </div>
+
+  <div class="about-page-content">
+
+    <div class="about-section">
+      <h2>Who I am</h2>
+      <p>I'm a Computer Science student from Karachi, Pakistan with a genuine passion for technology and building things that work. I started coding because I wanted to create — not just consume — and that curiosity has led me down some exciting paths.</p>
+      <p>Currently I'm focused on three areas: Full Stack Development, AI/ML, and Data Science. I believe these three together are the future of software, and I want to be ready for it.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>What I do</h2>
+      <p>I build full stack web applications using Python and Flask, work with data using Pandas and NumPy, and explore machine learning with Scikit-learn. Every project I take on is a chance to learn something new and apply it in a real, working context.</p>
+      <p>I also build desktop applications with Tkinter and have experience with game development using Pygame. I like understanding how things work from the ground up.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>My approach</h2>
+      <p>I learn by doing. Every project in my portfolio represents a real challenge I've tackled — not a tutorial I followed. I believe the best way to grow as a developer is to build things, break them, fix them, and ship them.</p>
+    </div>
+
+    <div class="about-skills">
+      <h2>Skills</h2>
+      <div class="skills-grid">
+        <div class="skill-item"><span class="skill-icon">🐍</span> Python</div>
+        <div class="skill-item"><span class="skill-icon">⚗️</span> Flask</div>
+        <div class="skill-item"><span class="skill-icon">🤖</span> AI / ML</div>
+        <div class="skill-item"><span class="skill-icon">📊</span> Data Science</div>
+        <div class="skill-item"><span class="skill-icon">🧬</span> Scikit-learn</div>
+        <div class="skill-item"><span class="skill-icon">🐼</span> Pandas</div>
+        <div class="skill-item"><span class="skill-icon">🔢</span> NumPy</div>
+        <div class="skill-item"><span class="skill-icon">🗄️</span> SQL</div>
+        <div class="skill-item"><span class="skill-icon">⚡</span> Supabase</div>
+        <div class="skill-item"><span class="skill-icon">🎨</span> HTML/CSS</div>
+        <div class="skill-item"><span class="skill-icon">🧩</span> Jinja2</div>
+        <div class="skill-item"><span class="skill-icon">🖥️</span> Tkinter</div>
+        <div class="skill-item"><span class="skill-icon">🐙</span> Git</div>
+        <div class="skill-item"><span class="skill-icon">🎮</span> Pygame</div>
+      </div>
+    </div>
+
+    <div class="about-links-section">
+      <a href="https://github.com/Shakir-Raza" target="_blank" class="btn btn-outline">GitHub →</a>
+      <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" class="btn btn-outline">LinkedIn →</a>
+      <a href="mailto:razashakir919@gmail.com" class="btn btn-outline">Email →</a>
+      <a href="/static/cv.pdf" download class="btn btn-accent">Download CV</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-links">
+    <a href="https://github.com/Shakir-Raza" target="_blank">GitHub</a>
+    <a href="https://www.linkedin.com/in/shakir-raza" target="_blank">LinkedIn</a>
+    <a href="mailto:razashakir919@gmail.com">Email</a>
+  </div>
+  <div class="footer-copy">© 2026 Shakir Raza — Built with Flask + Supabase</div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contactModal" onclick="if(event.target===this)closeContact()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Get in <span>touch</span></h3>
+      <button class="modal-close" onclick="closeContact()">✕</button>
+    </div>
+    <div class="contact-items">
+      <div class="contact-item">
+        <div class="contact-icon">✉</div>
+        <div class="contact-info">
+          <div class="contact-label">Email</div>
+          <div class="contact-value">razashakir919@gmail.com</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('razashakir919@gmail.com', this)">Copy</button>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">🐙</div>
+        <div class="contact-info">
+          <div class="contact-label">GitHub</div>
+          <div class="contact-value">github.com/Shakir-Raza</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('https://github.com/Shakir-Raza', this)">Copy</button>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">💼</div>
+        <div class="contact-info">
+          <div class="contact-label">LinkedIn</div>
+          <div class="contact-value">linkedin.com/in/shakir-raza</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('https://www.linkedin.com/in/shakir-raza', this)">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openContact() { document.getElementById('contactModal').classList.add('show'); }
+function closeContact() { document.getElementById('contactModal').classList.remove('show'); }
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text);
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 2000);
+}
+</script>
+
+</body>
+</html>

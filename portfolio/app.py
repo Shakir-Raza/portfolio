@@ -216,5 +216,9 @@ def upload_cv():
         flash("CV uploaded successfully!")
     return redirect(url_for("admin"))
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 if __name__ == "__main__":
     app.run(debug=True)
