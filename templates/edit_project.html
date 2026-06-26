@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Edit Project</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div style="max-width:600px; margin:60px auto; padding:20px;">
+  <h2>Edit Project</h2>
+  <form method="POST">
+    <input type="text" name="title" value="{{ project.title }}" placeholder="Title" required style="width:100%;margin-bottom:10px;padding:8px;"><br>
+    <textarea name="description" placeholder="Description" required style="width:100%;margin-bottom:10px;padding:8px;">{{ project.description }}</textarea><br>
+    <input type="text" name="live_url" value="{{ project.live_url or '' }}" placeholder="Live URL" style="width:100%;margin-bottom:10px;padding:8px;"><br>
+    <input type="text" name="github_url" value="{{ project.github_url or '' }}" placeholder="GitHub URL" style="width:100%;margin-bottom:10px;padding:8px;"><br>
+    <input type="text" name="tags" value="{{ project.tags | join(', ') }}" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;padding:8px;"><br>
+    <select name="category" style="width:100%;margin-bottom:10px;padding:8px;">
+      <option value="fullstack" {{ 'selected' if project.category == 'fullstack' }}>Full Stack</option>
+      <option value="ml" {{ 'selected' if project.category == 'ml' }}>ML/AI</option>
+      <option value="data" {{ 'selected' if project.category == 'data' }}>Data Science</option>
+      <option value="other" {{ 'selected' if project.category == 'other' }}>Other</option>
+    </select><br>
+    <button type="submit" style="padding:10px 20px;">Save Changes</button>
+    <a href="/admin" style="margin-left:10px;">Cancel</a>
+  </form>
+</div>
+</body>
+</html>
