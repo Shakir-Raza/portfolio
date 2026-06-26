@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shakir Raza | Developer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">S<span>R</span></a>
+  <div class="nav-links">
+    <a href="#projects">Work</a>
+    <a href="/about">About</a>
+    <button class="contact-btn" onclick="openContact()">Contact</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag"><span class="pulse-dot"></span> Available for work</div>
+  <h1>Shakir Raza —<br><span>I build & deploy real things</span></h1>
+<p>Flask backends, machine learning pipelines, and data-driven apps. Based in Karachi, open to work.</p>
+    <a href="#projects" class="btn btn-accent">View Projects</a>
+    <a href="/static/cv.pdf" download class="btn btn-outline">Download CV</a>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="section" id="skills">
+  <div class="section-header">
+    <span class="section-title">✦ Skills & Tools</span>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-item"><span class="skill-icon">🐍</span> Python</div>
+    <div class="skill-item"><span class="skill-icon">⚗️</span> Flask</div>
+    <div class="skill-item"><span class="skill-icon">🤖</span> AI / ML</div>
+    <div class="skill-item"><span class="skill-icon">📊</span> Data Science</div>
+    <div class="skill-item"><span class="skill-icon">🧬</span> Scikit-learn</div>
+    <div class="skill-item"><span class="skill-icon">🐼</span> Pandas</div>
+    <div class="skill-item"><span class="skill-icon">🔢</span> NumPy</div>
+    <div class="skill-item"><span class="skill-icon">🗄️</span> SQL</div>
+    <div class="skill-item"><span class="skill-icon">⚡</span> Supabase</div>
+    <div class="skill-item"><span class="skill-icon">🎨</span> HTML/CSS</div>
+    <div class="skill-item"><span class="skill-icon">🧩</span> Jinja2</div>
+    <div class="skill-item"><span class="skill-icon">🖥️</span> Tkinter</div>
+    <div class="skill-item"><span class="skill-icon">🐙</span> Git</div>
+    <div class="skill-item"><span class="skill-icon">🎮</span> Pygame</div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <div class="section-header">
+    <span class="section-title">✦ Selected Projects</span>
+    <span class="section-title">{{ projects|length }} projects</span>
+  </div>
+
+  {% if projects %}
+  <div class="projects-grid" id="projectsGrid">
+    {% for project in projects %}
+    <a href="/projects/{{ project.slug }}" class="project-card">
+      <div class="card-number">{{ '%02d' % loop.index }}</div>
+      {% if project.image_url %}
+        <img src="{{ project.image_url }}" alt="{{ project.title }}" class="card-image"/>
+      {% else %}
+        <div class="card-image-placeholder">✦</div>
+      {% endif %}
+      <div class="card-hover-overlay">View Project →</div>
+      <div class="card-body">
+        <div class="card-title">{{ project.title }}</div>
+        <div class="card-desc">{{ project.description }}</div>
+        {% if project.tags %}
+        <div class="card-tags">
+          {% for tag in project.tags %}
+          <span class="tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="card-footer">
+          {% if project.views %}
+          <span class="view-count">👁 {{ project.views }} views</span>
+          {% endif %}
+          <div class="card-links">
+            {% if project.live_url %}<span class="btn btn-accent">Live →</span>{% endif %}
+            {% if project.github_url %}<span class="btn btn-outline">GitHub</span>{% endif %}
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="big">✦</div>
+    <p>No projects yet. <a href="/admin" style="color: var(--accent)">Add your first one →</a></p>
+  </div>
+  {% endif %}
+</section>
+
+<footer>
+  <div class="footer-links">
+    <a href="https://github.com/Shakir-Raza" target="_blank">GitHub</a>
+    <a href="https://www.linkedin.com/in/shakir-raza" target="_blank">LinkedIn</a>
+    <a href="mailto:razashakir919@gmail.com">Email</a>
+  </div>
+  <div class="footer-copy">© 2026 Shakir Raza — Built with Flask + Supabase</div>
+</footer>
+
+<!-- CONTACT MODAL -->
+<div class="modal-overlay" id="contactModal" onclick="if(event.target===this)closeContact()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Get in <span>touch</span></h3>
+      <button class="modal-close" onclick="closeContact()">✕</button>
+    </div>
+    <div class="contact-items">
+      <div class="contact-item">
+        <div class="contact-icon">✉</div>
+        <div class="contact-info">
+          <div class="contact-label">Email</div>
+          <div class="contact-value">razashakir919@gmail.com</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('razashakir919@gmail.com', this)">Copy</button>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">🐙</div>
+        <div class="contact-info">
+          <div class="contact-label">GitHub</div>
+          <div class="contact-value">github.com/Shakir-Raza</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('https://github.com/Shakir-Raza', this)">Copy</button>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">💼</div>
+        <div class="contact-info">
+          <div class="contact-label">LinkedIn</div>
+          <div class="contact-value">linkedin.com/in/shakir-raza</div>
+        </div>
+        <button class="copy-btn" onclick="copyText('https://www.linkedin.com/in/shakir-raza', this)">Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<div class="chatbot-wrap">
+  <button class="chatbot-btn" onclick="toggleChat()">
+    <span class="chatbot-icon">✦</span>
+    <span class="chatbot-notif"></span>
+  </button>
+  <div class="chatbot-window" id="chatWindow">
+    <div class="chatbot-header">
+      <div class="chatbot-avatar">SR</div>
+      <div class="chatbot-header-info">
+        <h4>Shakir's AI Assistant</h4>
+        <p><span class="chatbot-status"></span>Powered by Groq</p>
+      </div>
+      <button class="chatbot-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chatbot-chips">
+      <span class="chip">Full Stack</span>
+      <span class="chip">AI/ML</span>
+      <span class="chip">Data Science</span>
+    </div>
+    <div class="chatbot-messages" id="chatMessages">
+      <div class="chat-msg bot">
+        <div class="chat-msg-label">ASSISTANT</div>
+        <div class="chat-msg-bubble">Hi there! ✦ I'm Shakir's AI assistant. Ask me about his projects, skills, or how to reach him.</div>
+      </div>
+    </div>
+    <div class="chatbot-suggestions" id="chatSuggestions">
+      <button onclick="askChat('What projects has he built?')">Projects</button>
+      <button onclick="askChat('What are his skills?')">Skills</button>
+      <button onclick="askChat('How to contact Shakir?')">Contact</button>
+      <button onclick="askChat('Is he available for work?')">Available?</button>
+    </div>
+    <div class="chatbot-input">
+      <input type="text" id="chatInput" placeholder="Ask anything about Shakir..." onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button onclick="sendChat()">→</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openContact() { document.getElementById('contactModal').classList.add('show'); }
+function closeContact() { document.getElementById('contactModal').classList.remove('show'); }
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text);
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 2000);
+}
+
+let chatOpen = false;
+let chatHistory = [];
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatWindow').classList.toggle('open', chatOpen);
+}
+
+function askChat(q) {
+  document.getElementById('chatInput').value = q;
+  sendChat();
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  document.getElementById('chatSuggestions').style.display = 'none';
+  addChatMsg(msg, 'user');
+  chatHistory.push({ role: 'user', content: msg });
+  showTyping();
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, history: chatHistory.slice(-6) })
+    });
+    const data = await res.json();
+    removeTyping();
+    addChatMsg(data.reply, 'bot');
+    chatHistory.push({ role: 'assistant', content: data.reply });
+  } catch(e) {
+    removeTyping();
+    addChatMsg('Sorry, something went wrong. Please try again!', 'bot');
+  }
+}
+
+function addChatMsg(text, type) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${type}`;
+  div.innerHTML = `<div class="chat-msg-label">${type === 'bot' ? 'ASSISTANT' : 'YOU'}</div><div class="chat-msg-bubble">${text}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg bot'; div.id = 'typing';
+  div.innerHTML = '<div class="chat-msg-label">ASSISTANT</div><div class="chat-msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+</script>
+
+</body>
+</html>
