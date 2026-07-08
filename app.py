@@ -73,6 +73,11 @@ def slugify(text):
 def index():
     result = supabase.table("projects").select("*").order("created_at", desc=True).execute()
     projects = result.data
+    # Sort by featured_rank when it's set (Phase 3 schema addition — see
+    # supabase-migration-case-study-fields.sql). Projects without a rank
+    # keep their original created_at-desc order, so this is a no-op until
+    # you've run the migration and started setting ranks in the admin panel.
+    projects.sort(key=lambda p: (p.get("featured_rank") is None, p.get("featured_rank") or 0))
     return render_template("index.html", projects=projects)
 
 @app.route("/projects/<slug>")
