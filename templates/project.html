@@ -3,22 +3,40 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{ project.title }} — Portfolio</title>
+  <title>{{ project.title }} — Shakir Raza</title>
+  <meta name="description" content="{{ project.description }}">
+
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{{ project.title }} — Shakir Raza">
+  <meta property="og:description" content="{{ project.description }}">
+  <meta property="og:image" content="{{ project.image_url or url_for('static', filename='og-image.png', _external=True) }}">
+  <meta property="og:url" content="https://shakirraza.up.railway.app/projects/{{ project.slug }}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ project.title }} — Shakir Raza">
+  <meta name="twitter:description" content="{{ project.description }}">
+  <meta name="twitter:image" content="{{ project.image_url or url_for('static', filename='og-image.png', _external=True) }}">
+
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="canonical" href="https://shakirraza.up.railway.app/projects/{{ project.slug }}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-
-
 <body>
 
+<a href="#main" class="skip-link">Skip to content</a>
 
-<nav>
-  <a href="/" class="nav-logo">S<span>R</span></a>
-  <div class="nav-links">
-  </div>
-</nav>
+{% set active_page = 'project' %}
+{% include '_nav.html' %}
 
+<main id="main">
 <div class="detail-container">
-  <a href="/" class="back-link">← Back to all projects</a>
+  <a href="/#projects" class="back-link">← Back to all projects</a>
 
   <h1 class="detail-title">{{ project.title }}</h1>
 
@@ -30,29 +48,49 @@
   </div>
   {% endif %}
 
- {% if project.images and project.images|length > 1 %}
-<div class="slideshow">
-  <div class="slideshow-track" id="slideshowTrack">
-    {% for img in project.images %}
-    <div class="slide {% if loop.first %}active{% endif %}">
-      <img src="{{ img }}" alt="{{ project.title }} screenshot {{ loop.index }}"/>
+  {% if project.status == 'coming_soon' %}
+  <div class="detail-placeholder">
+    <i class="fa-solid fa-hammer icon" aria-hidden="true"></i>
+    <p>This case study is still being written up — the project is in active development.</p>
+  </div>
+  {% elif project.images and project.images|length > 1 %}
+  <div class="slideshow">
+    <div class="slideshow-track" id="slideshowTrack">
+      {% for img in project.images %}
+      <div class="slide {% if loop.first %}active{% endif %}">
+        <img src="{{ img }}" alt="{{ project.title }} screenshot {{ loop.index }}"/>
+      </div>
+      {% endfor %}
+    </div>
+    <button class="slide-btn prev" onclick="changeSlide(-1)" aria-label="Previous screenshot">
+      <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+    </button>
+    <button class="slide-btn next" onclick="changeSlide(1)" aria-label="Next screenshot">
+      <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    </button>
+    <div class="slide-dots" id="slideDots">
+      {% for img in project.images %}
+      <div class="dot {% if loop.first %}active{% endif %}" onclick="goSlide({{ loop.index0 }})" role="button" tabindex="0" aria-label="Show screenshot {{ loop.index }}"></div>
+      {% endfor %}
+    </div>
+    <div class="slide-counter" id="slideCounter">1 / {{ project.images|length }}</div>
+  </div>
+  {% elif project.image_url %}
+  <img src="{{ project.image_url }}" alt="{{ project.title }}" class="detail-image"/>
+  {% endif %}
+
+  <p class="detail-desc">{{ project.description }}</p>
+
+  {% if project.metrics %}
+  <div class="metrics-grid">
+    {% for m in project.metrics %}
+    <div class="metric-card">
+      <div class="metric-value">{{ m.value }}</div>
+      <div class="metric-label">{{ m.label }}</div>
     </div>
     {% endfor %}
   </div>
-  <button class="slide-btn prev" onclick="changeSlide(-1)">&#8592;</button>
-  <button class="slide-btn next" onclick="changeSlide(1)">&#8594;</button>
-  <div class="slide-dots" id="slideDots">
-    {% for img in project.images %}
-    <div class="dot {% if loop.first %}active{% endif %}" onclick="goSlide({{ loop.index0 }})"></div>
-    {% endfor %}
-  </div>
-  <div class="slide-counter" id="slideCounter">1 / {{ project.images|length }}</div>
-</div>
-{% elif project.image_url %}
-<img src="{{ project.image_url }}" alt="{{ project.title }}" class="detail-image"/>
-{% endif %}
-
-  <p class="detail-desc">{{ project.description }}</p>
+  {% endif %}
 
   <div class="detail-links">
     {% if project.live_url %}
@@ -62,34 +100,88 @@
     <a href="{{ project.github_url }}" target="_blank" class="btn btn-outline">View on GitHub</a>
     {% endif %}
   </div>
+
+  {% if project.problem %}
+  <div class="detail-section reveal">
+    <h2>Problem</h2>
+    <p>{{ project.problem }}</p>
+  </div>
+  {% endif %}
+
+  {% if project.solution %}
+  <div class="detail-section reveal">
+    <h2>Solution</h2>
+    <p>{{ project.solution }}</p>
+  </div>
+  {% endif %}
+
+  {% if project.architecture %}
+  <div class="detail-section reveal">
+    <h2>Architecture</h2>
+    <p>{{ project.architecture }}</p>
+  </div>
+  {% endif %}
+
+  {% if project.challenges %}
+  <div class="detail-section reveal">
+    <h2>Challenges</h2>
+    <p>{{ project.challenges }}</p>
+  </div>
+  {% endif %}
+
+  {% if project.results %}
+  <div class="detail-section reveal">
+    <h2>Results</h2>
+    <p>{{ project.results }}</p>
+  </div>
+  {% endif %}
+
+  {% if project.lessons_learned %}
+  <div class="detail-section reveal">
+    <h2>Lessons Learned</h2>
+    <p>{{ project.lessons_learned }}</p>
+  </div>
+  {% endif %}
+
+  {% if project.future_improvements %}
+  <div class="detail-section reveal">
+    <h2>Future Improvements</h2>
+    <p>{{ project.future_improvements }}</p>
+  </div>
+  {% endif %}
+
 </div>
+</main>
 
-<footer>
-  Built with Flask + Supabase &mdash; © 2026
-</footer>
+{% include '_footer.html' %}
 
+{% include '_contact_modal.html' %}
+
+{% include '_shared_scripts.html' %}
 <script>
-  let cur = 0;
-  const slides = document.querySelectorAll('.slide');
-  const dots = document.querySelectorAll('.dot');
-  const counter = document.getElementById('slideCounter');
+let cur = 0;
+const slides = document.querySelectorAll('.slide');
+const dots = document.querySelectorAll('.dot');
+const counter = document.getElementById('slideCounter');
 
-  function updateSlider() {
-    slides.forEach((s, i) => s.classList.toggle('active', i === cur));
-    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
-    if (counter) counter.textContent = `${cur + 1} / ${slides.length}`;
-  }
+function updateSlider() {
+  slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+  dots.forEach((d, i) => d.classList.toggle('active', i === cur));
+  if (counter) counter.textContent = `${cur + 1} / ${slides.length}`;
+}
 
-  function changeSlide(dir) {
-    cur = (cur + dir + slides.length) % slides.length;
-    updateSlider();
-  }
+function changeSlide(dir) {
+  if (!slides.length) return;
+  cur = (cur + dir + slides.length) % slides.length;
+  updateSlider();
+}
 
-  function goSlide(n) {
-    cur = n;
-    updateSlider();
-  }
+function goSlide(n) {
+  cur = n;
+  updateSlider();
+}
 </script>
+
 
 </body>
 </html>

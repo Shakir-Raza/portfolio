@@ -1,0 +1,10 @@
+<nav>
+  <a href="/" class="nav-logo">S<span>R</span></a>
+  <div class="nav-links">
+    <a href="{% if active_page == 'home' %}#projects{% else %}/#projects{% endif %}"{% if active_page == 'home' %} data-nav-link{% endif %}>Work</a>
+    <a href="/about"{% if active_page == 'about' %} class="active"{% endif %}>About</a>
+    {% if show_contact_btn is not defined or show_contact_btn %}
+    <button class="contact-btn" onclick="openContact()">Contact</button>
+    {% endif %}
+  </div>
+</nav>

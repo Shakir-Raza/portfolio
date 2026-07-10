@@ -3,71 +3,176 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shakir Raza | Developer</title>
+  <title>Shakir Raza | AI &amp; ML Engineer</title>
+  <meta name="description" content="AI/ML Engineer and Python backend developer in Karachi. I build end-to-end ML pipelines and Flask backends — from a house-price model at 0.112 RMSLE to production LLM chatbots.">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Shakir Raza | AI &amp; ML Engineer">
+  <meta property="og:description" content="AI/ML Engineer and Python backend developer in Karachi. I build end-to-end ML pipelines and Flask backends — from a house-price model at 0.112 RMSLE to production LLM chatbots.">
+  <meta property="og:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
+  <meta property="og:url" content="https://shakirraza.up.railway.app/">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Shakir Raza | AI &amp; ML Engineer">
+  <meta name="twitter:description" content="AI/ML Engineer and Python backend developer in Karachi. I build end-to-end ML pipelines and Flask backends.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
+
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="canonical" href="https://shakirraza.up.railway.app/">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Shakir Raza",
+    "jobTitle": "AI/ML Engineer & Python Backend Developer",
+    "url": "https://shakirraza.up.railway.app/",
+    "sameAs": [
+      "https://github.com/Shakir-Raza",
+      "https://www.linkedin.com/in/shakir-raza"
+    ],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Karachi",
+      "addressCountry": "PK"
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<nav>
-  <a href="/" class="nav-logo">S<span>R</span></a>
-  <div class="nav-links">
-    <a href="#projects">Work</a>
-    <a href="/about">About</a>
-    <button class="contact-btn" onclick="openContact()">Contact</button>
-  </div>
-</nav>
+<a href="#main" class="skip-link">Skip to content</a>
+
+<canvas id="heroCanvas" aria-hidden="true"></canvas>
+
+{% set active_page = 'home' %}
+{% include '_nav.html' %}
+
+<main id="main">
 
 <!-- HERO -->
-<section class="hero">
-  <div class="hero-tag"><span class="pulse-dot"></span> Available for work</div>
-  <h1>Shakir Raza —<br><span>I build & deploy real things</span></h1>
-<p>Flask backends, machine learning pipelines, and data-driven apps. Based in Karachi, open to work.</p>
-    <a href="#projects" class="btn btn-accent">View Projects</a>
-    <a href="/static/cv.pdf" download class="btn btn-outline">Download CV</a>
+<section class="hero" id="hero">
+  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+
+  <div class="hero-inner">
+  <div class="hero-grid">
+
+    <div class="hero-photo-card">
+      <div class="hero-photo-frame">
+        <img src="{{ url_for('static', filename='profile.jpg') }}" alt="Shakir Raza" loading="eager"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="hero-photo-fallback" style="display:none;">SR</div>
+      </div>
+      <h3 class="hero-photo-name">Shakir Raza</h3>
+      <p class="hero-photo-tag">AI/ML Engineer &amp; Python Backend Developer</p>
+      <div class="hero-photo-socials">
+        <a href="https://github.com/Shakir-Raza" target="_blank" aria-label="GitHub"><i class="fa-brands fa-github" aria-hidden="true"></i></a>
+        <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" aria-label="LinkedIn"><i class="fa-brands fa-linkedin" aria-hidden="true"></i></a>
+        <a href="mailto:razashakir919@gmail.com" aria-label="Email"><i class="fa-solid fa-envelope" aria-hidden="true"></i></a>
+      </div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-tag"><span class="pulse-dot"></span> Available for work</div>
+
+      <h1 class="hero-headline">
+        <span class="line-solid">AI/ML ENGINEER</span>
+        <span class="line-ghost">&amp; BACKEND DEV</span>
+      </h1>
+
+      <p class="hero-desc">I build machine learning pipelines, Flask backends, and full-stack systems — a house-price model at 0.112 RMSLE, production LLM chatbots, a desktop app built on real data structures. Python end to end, shipped — not just studied. Based in Karachi, open to work.</p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value">0.112</div>
+          <div class="hero-stat-label">RMSLE Salary Model</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">5</div>
+          <div class="hero-stat-label">Projects Shipped</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">14</div>
+          <div class="hero-stat-label">Tech Skills</div>
+        </div>
+      </div>
+
+      <div class="hero-spotlight-grid">
+        <a href="#projects" class="spotlight-card spotlight-cyan">
+          <i class="fa-solid fa-brain" aria-hidden="true"></i>
+          <span>ML Pipelines,<br>Data Science</span>
+          <span class="spotlight-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+        <a href="#projects" class="spotlight-card spotlight-amber">
+          <i class="fa-solid fa-server" aria-hidden="true"></i>
+          <span>Flask, Supabase,<br>LLM APIs</span>
+          <span class="spotlight-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+      </div>
+
+      <div class="hero-ctas">
+        <a href="#projects" class="btn btn-accent">View Projects</a>
+        <a href="/static/cv.pdf" download class="btn btn-outline">Download CV</a>
+      </div>
+    </div>
+
+  </div>
   </div>
 </section>
 
 <!-- SKILLS -->
-<section class="section" id="skills">
+<section class="section reveal" id="skills">
   <div class="section-header">
-    <span class="section-title">✦ Skills & Tools</span>
+    <span class="section-title">Skills &amp; Tools</span>
   </div>
   <div class="skills-grid">
-    <div class="skill-item"><span class="skill-icon">🐍</span> Python</div>
-    <div class="skill-item"><span class="skill-icon">⚗️</span> Flask</div>
-    <div class="skill-item"><span class="skill-icon">🤖</span> AI / ML</div>
-    <div class="skill-item"><span class="skill-icon">📊</span> Data Science</div>
-    <div class="skill-item"><span class="skill-icon">🧬</span> Scikit-learn</div>
-    <div class="skill-item"><span class="skill-icon">🐼</span> Pandas</div>
-    <div class="skill-item"><span class="skill-icon">🔢</span> NumPy</div>
-    <div class="skill-item"><span class="skill-icon">🗄️</span> SQL</div>
-    <div class="skill-item"><span class="skill-icon">⚡</span> Supabase</div>
-    <div class="skill-item"><span class="skill-icon">🎨</span> HTML/CSS</div>
-    <div class="skill-item"><span class="skill-icon">🧩</span> Jinja2</div>
-    <div class="skill-item"><span class="skill-icon">🖥️</span> Tkinter</div>
-    <div class="skill-item"><span class="skill-icon">🐙</span> Git</div>
-    <div class="skill-item"><span class="skill-icon">🎮</span> Pygame</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-python" aria-hidden="true"></i></span> Python</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-flask" aria-hidden="true"></i></span> Flask</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-brain" aria-hidden="true"></i></span> AI / ML</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span> Data Science</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-gears" aria-hidden="true"></i></span> Scikit-learn</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-table" aria-hidden="true"></i></span> Pandas</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-square-root-variable" aria-hidden="true"></i></span> NumPy</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span> SQL</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span> Supabase</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-html5" aria-hidden="true"></i></span> HTML/CSS</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-file-code" aria-hidden="true"></i></span> Jinja2</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-desktop" aria-hidden="true"></i></span> Tkinter</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-git-alt" aria-hidden="true"></i></span> Git</div>
+    <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-gamepad" aria-hidden="true"></i></span> Pygame</div>
   </div>
 </section>
 
 <!-- PROJECTS -->
-<section class="section" id="projects">
+<section class="section reveal" id="projects">
   <div class="section-header">
-    <span class="section-title">✦ Selected Projects</span>
+    <span class="section-title">Selected Projects</span>
     <span class="section-title">{{ projects|length }} projects</span>
   </div>
 
   {% if projects %}
   <div class="projects-grid" id="projectsGrid">
     {% for project in projects %}
-    <a href="/projects/{{ project.slug }}" class="project-card">
+    <a href="/projects/{{ project.slug }}" class="project-card{% if project.status == 'coming_soon' %} is-coming-soon{% endif %}">
       <div class="card-number">{{ '%02d' % loop.index }}</div>
-      {% if project.image_url %}
-        <img src="{{ project.image_url }}" alt="{{ project.title }}" class="card-image"/>
+
+      {% if project.status == 'coming_soon' %}
+        <span class="coming-soon-badge">In progress</span>
+        <div class="card-image-placeholder"><i class="fa-solid fa-hammer" aria-hidden="true"></i></div>
+      {% elif project.image_url %}
+        <img src="{{ project.image_url }}" alt="{{ project.title }}" class="card-image" loading="lazy"/>
       {% else %}
-        <div class="card-image-placeholder">✦</div>
+        <div class="card-image-placeholder"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></div>
       {% endif %}
-      <div class="card-hover-overlay">View Project →</div>
+
+      <div class="card-hover-overlay">{% if project.status == 'coming_soon' %}Coming soon →{% else %}View Project →{% endif %}</div>
       <div class="card-body">
         <div class="card-title">{{ project.title }}</div>
         <div class="card-desc">{{ project.description }}</div>
@@ -80,7 +185,9 @@
         {% endif %}
         <div class="card-footer">
           {% if project.views %}
-          <span class="view-count">👁 {{ project.views }} views</span>
+          <span class="view-count"><i class="fa-solid fa-eye" aria-hidden="true"></i> {{ project.views }} views</span>
+          {% else %}
+          <span></span>
           {% endif %}
           <div class="card-links">
             {% if project.live_url %}<span class="btn btn-accent">Live →</span>{% endif %}
@@ -93,61 +200,22 @@
   </div>
   {% else %}
   <div class="empty-state">
-    <div class="big">✦</div>
+    <div class="big"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></div>
     <p>No projects yet. <a href="/admin" style="color: var(--accent)">Add your first one →</a></p>
   </div>
   {% endif %}
 </section>
 
-<footer>
-  <div class="footer-links">
-    <a href="https://github.com/Shakir-Raza" target="_blank">GitHub</a>
-    <a href="https://www.linkedin.com/in/shakir-raza" target="_blank">LinkedIn</a>
-    <a href="mailto:razashakir919@gmail.com">Email</a>
-  </div>
-  <div class="footer-copy">© 2026 Shakir Raza — Built with Flask + Supabase</div>
-</footer>
+</main>
 
-<!-- CONTACT MODAL -->
-<div class="modal-overlay" id="contactModal" onclick="if(event.target===this)closeContact()">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3>Get in <span>touch</span></h3>
-      <button class="modal-close" onclick="closeContact()">✕</button>
-    </div>
-    <div class="contact-items">
-      <div class="contact-item">
-        <div class="contact-icon">✉</div>
-        <div class="contact-info">
-          <div class="contact-label">Email</div>
-          <div class="contact-value">razashakir919@gmail.com</div>
-        </div>
-        <button class="copy-btn" onclick="copyText('razashakir919@gmail.com', this)">Copy</button>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon">🐙</div>
-        <div class="contact-info">
-          <div class="contact-label">GitHub</div>
-          <div class="contact-value">github.com/Shakir-Raza</div>
-        </div>
-        <button class="copy-btn" onclick="copyText('https://github.com/Shakir-Raza', this)">Copy</button>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon">💼</div>
-        <div class="contact-info">
-          <div class="contact-label">LinkedIn</div>
-          <div class="contact-value">linkedin.com/in/shakir-raza</div>
-        </div>
-        <button class="copy-btn" onclick="copyText('https://www.linkedin.com/in/shakir-raza', this)">Copy</button>
-      </div>
-    </div>
-  </div>
-</div>
+{% include '_footer.html' %}
+
+{% include '_contact_modal.html' %}
 
 <!-- CHATBOT -->
 <div class="chatbot-wrap">
-  <button class="chatbot-btn" onclick="toggleChat()">
-    <span class="chatbot-icon">✦</span>
+  <button class="chatbot-btn" onclick="toggleChat()" aria-label="Open chat assistant">
+    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
     <span class="chatbot-notif"></span>
   </button>
   <div class="chatbot-window" id="chatWindow">
@@ -157,7 +225,9 @@
         <h4>Shakir's AI Assistant</h4>
         <p><span class="chatbot-status"></span>Powered by Groq</p>
       </div>
-      <button class="chatbot-close" onclick="toggleChat()">✕</button>
+      <button class="chatbot-close" onclick="toggleChat()" aria-label="Close chat">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
     </div>
     <div class="chatbot-chips">
       <span class="chip">Full Stack</span>
@@ -167,7 +237,7 @@
     <div class="chatbot-messages" id="chatMessages">
       <div class="chat-msg bot">
         <div class="chat-msg-label">ASSISTANT</div>
-        <div class="chat-msg-bubble">Hi there! ✦ I'm Shakir's AI assistant. Ask me about his projects, skills, or how to reach him.</div>
+        <div class="chat-msg-bubble">Hi there! I'm Shakir's AI assistant. Ask me about his projects, skills, or how to reach him.</div>
       </div>
     </div>
     <div class="chatbot-suggestions" id="chatSuggestions">
@@ -177,20 +247,14 @@
       <button onclick="askChat('Is he available for work?')">Available?</button>
     </div>
     <div class="chatbot-input">
-      <input type="text" id="chatInput" placeholder="Ask anything about Shakir..." onkeydown="if(event.key==='Enter')sendChat()"/>
-      <button onclick="sendChat()">→</button>
+      <input type="text" id="chatInput" placeholder="Ask anything about Shakir..." onkeydown="if(event.key==='Enter')sendChat()" aria-label="Chat message"/>
+      <button onclick="sendChat()" aria-label="Send message"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
     </div>
   </div>
 </div>
 
+{% include '_shared_scripts.html' %}
 <script>
-function openContact() { document.getElementById('contactModal').classList.add('show'); }
-function closeContact() { document.getElementById('contactModal').classList.remove('show'); }
-function copyText(text, btn) {
-  navigator.clipboard.writeText(text);
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = 'Copy', 2000);
-}
 
 let chatOpen = false;
 let chatHistory = [];
@@ -234,7 +298,8 @@ function addChatMsg(text, type) {
   const msgs = document.getElementById('chatMessages');
   const div = document.createElement('div');
   div.className = `chat-msg ${type}`;
-  div.innerHTML = `<div class="chat-msg-label">${type === 'bot' ? 'ASSISTANT' : 'YOU'}</div><div class="chat-msg-bubble">${text}</div>`;
+  div.innerHTML = `<div class="chat-msg-label">${type === 'bot' ? 'ASSISTANT' : 'YOU'}</div><div class="chat-msg-bubble"></div>`;
+  div.querySelector('.chat-msg-bubble').textContent = text;
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
@@ -252,6 +317,83 @@ function removeTyping() {
   const t = document.getElementById('typing');
   if (t) t.remove();
 }
+
+/* ── Scroll-spy nav ── */
+const navLink = document.querySelector('[data-nav-link]');
+const projectsSection = document.getElementById('projects');
+if (navLink && projectsSection && 'IntersectionObserver' in window) {
+  const spy = new IntersectionObserver((entries) => {
+    entries.forEach(e => navLink.classList.toggle('active', e.isIntersecting));
+  }, { threshold: 0.3 });
+  spy.observe(projectsSection);
+}
+
+/* ── Hero node graph (canvas, desktop only, respects reduced motion) ── */
+(function () {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('heroCanvas');
+  if (!canvas || reduceMotion || window.innerWidth < 1024) { if (canvas) canvas.style.display = 'none'; return; }
+
+  const ctx = canvas.getContext('2d');
+  const hero = document.getElementById('hero');
+  let w, h, nodes;
+
+  function resize() {
+    w = canvas.width = hero.offsetWidth;
+    h = canvas.height = hero.offsetHeight;
+  }
+
+  function makeNodes() {
+    const count = Math.min(36, Math.floor((w * h) / 26000));
+    nodes = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      r: Math.random() * 1.5 + 1
+    }));
+  }
+
+  function step() {
+    ctx.clearRect(0, 0, w, h);
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > w) n.vx *= -1;
+      if (n.y < 0 || n.y > h) n.vy *= -1;
+    });
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 140) {
+          ctx.strokeStyle = `rgba(110,231,255,${0.12 * (1 - dist / 140)})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    nodes.forEach(n => {
+      ctx.fillStyle = 'rgba(110,231,255,0.5)';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  let lastFrame = 0;
+  function loop(ts) {
+    if (ts - lastFrame > 33) { step(); lastFrame = ts; } /* ~30fps cap */
+    requestAnimationFrame(loop);
+  }
+
+  resize();
+  makeNodes();
+  requestAnimationFrame(loop);
+  window.addEventListener('resize', () => { resize(); makeNodes(); });
+})();
 </script>
 
 </body>

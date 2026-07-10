@@ -4,11 +4,15 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Login</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<div class="login-container">
+<a href="#main" class="skip-link">Skip to content</a>
+
+<div class="login-container" id="main">
   <div class="login-box">
     <h2>Admin <span style="color:var(--accent)">Login</span></h2>
     <p>Enter your password to manage projects.</p>
@@ -22,9 +26,10 @@
     {% endwith %}
 
     <form method="POST" action="/admin/login">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="password" placeholder="Enter admin password" autofocus/>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter admin password" autofocus/>
       </div>
       <button type="submit" class="btn btn-accent" style="width:100%; padding: 0.8rem;">
         Login →

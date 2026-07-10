@@ -2,14 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>404 — Not Found</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>404 — Not Found | Shakir Raza</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<div style="text-align:center; padding:100px 20px;">
-  <h1>404 — Page Not Found</h1>
-  <p>This page doesn't exist or was moved.</p>
-  <a href="/">Go Home →</a>
-</div>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+{% set show_contact_btn = false %}
+{% include '_nav.html' %}
+
+<main id="main">
+  <div style="text-align:center; padding: var(--space-9) var(--space-5); max-width: 600px; margin: 0 auto;">
+    <i class="fa-solid fa-compass" style="font-size: 2.5rem; color: var(--accent); margin-bottom: var(--space-5); display: block;" aria-hidden="true"></i>
+    <h1 style="font-size: var(--text-h2); margin-bottom: var(--space-3);">404 — Page Not Found</h1>
+    <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">This page doesn't exist or was moved.</p>
+    <a href="/" class="btn btn-accent">Go Home →</a>
+  </div>
+</main>
+
 </body>
 </html>

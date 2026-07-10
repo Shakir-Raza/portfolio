@@ -4,133 +4,124 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About — Shakir Raza</title>
+  <meta name="description" content="About Shakir Raza — AI/ML Engineer and Python backend developer based in Karachi, Pakistan. NAVTTC-certified in AI & Machine Learning.">
+
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="About — Shakir Raza">
+  <meta property="og:description" content="AI/ML Engineer and Python backend developer based in Karachi, Pakistan.">
+  <meta property="og:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
+  <meta property="og:url" content="https://shakirraza.up.railway.app/about">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About — Shakir Raza">
+  <meta name="twitter:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
+
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="canonical" href="https://shakirraza.up.railway.app/about">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<nav>
-  <a href="/" class="nav-logo">S<span>R</span></a>
-  <div class="nav-links">
-    <a href="/#projects">Work</a>
-    <a href="/about">About</a>
-    <button class="contact-btn" onclick="openContact()">Contact</button>
-  </div>
-</nav>
-  
+<a href="#main" class="skip-link">Skip to content</a>
+
+{% set active_page = 'about' %}
+{% include '_nav.html' %}
+
+<main id="main">
 <div class="about-page">
 
-  <div class="about-page-header">
+  <div class="about-page-header reveal">
     <a href="/" class="back-link">← Back</a>
-    <div class="about-page-avatar">SR</div>
-    <h1 class="about-page-name">Shakir Raza</h1>
-    <p class="about-page-title">Developer | AI/ML | Data Science</p>
-    <p class="about-page-location">📍 Karachi, Pakistan</p>
-    <div class="about-page-status"><span class="pulse-dot"></span> Available for work</div>
+    <div class="hero-tag" style="margin: 0 auto var(--space-5);"><span class="pulse-dot"></span> Available for work</div>
+
+    <h1 class="hero-headline" style="text-align:center;">
+      <span class="line-solid">BUILDING</span>
+      <span class="line-ghost">INTELLIGENT SYSTEMS</span>
+    </h1>
+
+    <p style="color: var(--text-secondary); font-size: var(--text-body-lg); max-width: 60ch; margin: var(--space-5) auto 0;">
+      Final-year Computer Science student in Karachi turning machine learning pipelines and Flask backends into things that actually ship — not just notebooks and coursework.
+    </p>
+
+    <p class="about-page-location" style="margin-top: var(--space-4);"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Karachi, Pakistan</p>
+
+    <div class="hero-stats" style="justify-content:center; margin-top: var(--space-7);">
+      <div class="hero-stat">
+        <div class="hero-stat-value text-stat">Final Year</div>
+        <div class="hero-stat-label">Computer Science</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value text-stat">NAVTTC</div>
+        <div class="hero-stat-label">AI &amp; ML Certified</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">5</div>
+        <div class="hero-stat-label">Projects Shipped</div>
+      </div>
+    </div>
   </div>
 
   <div class="about-page-content">
 
-    <div class="about-section">
-      <h2>Who I am</h2>
-      <p>I'm a Computer Science student from Karachi, Pakistan with a genuine passion for technology and building things that work. I started coding because I wanted to create — not just consume — and that curiosity has led me down some exciting paths.</p>
-      <p>Currently I'm focused on three areas: Full Stack Development, AI/ML, and Data Science. I believe these three together are the future of software, and I want to be ready for it.</p>
+    <div class="about-section reveal">
+      <h2><i class="fa-solid fa-hammer" style="color:var(--accent); margin-right:10px; font-size:0.85em;" aria-hidden="true"></i>What I build</h2>
+      <p>I'm a final-year Computer Science student who builds end-to-end machine learning pipelines and Python backends, not just notebooks. My Job Market Dashboard pulls live postings from the Adzuna API, cleans and stores them in Supabase, and trains a Ridge regression model to predict salaries — currently at 0.112 RMSLE. My House Prices project compares four models (Ridge, XGBoost, LightGBM, GradientBoosting) across 79 features and 1,460 samples with 5-fold cross-validation, landing at the same 0.112 RMSLE.</p>
+      <p>This portfolio itself is a full-stack Flask and Supabase application with an admin panel for managing projects and an LLM-powered chatbot (Groq, Llama 3.1) that answers questions about my work in natural language — not a static template.</p>
     </div>
 
-    <div class="about-section">
-      <h2>What I do</h2>
-      <p>I build full stack web applications using Python and Flask, work with data using Pandas and NumPy, and explore machine learning with Scikit-learn. Every project I take on is a chance to learn something new and apply it in a real, working context.</p>
-      <p>I also build desktop applications with Tkinter and have experience with game development using Pygame. I like understanding how things work from the ground up.</p>
+    <div class="about-section reveal">
+      <h2><i class="fa-solid fa-diagram-project" style="color:var(--accent); margin-right:10px; font-size:0.85em;" aria-hidden="true"></i>How I work</h2>
+      <p>Data structures aren't just coursework to me — my Library Management System uses a Binary Search Tree for book lookups, a queue for the waiting list, and a set for the collection, because those were the right tools for the job, not because a syllabus asked for them. I read the problem first and reach for the structure or model that actually fits, then validate it with real metrics instead of assuming it worked.</p>
+      <p>I'm NAVTTC-certified in AI &amp; Machine Learning and currently completing Saylani's AI &amp; Data Science program, covering EDA, ML pipelines, and deep learning fundamentals with TensorFlow.</p>
     </div>
 
-    <div class="about-section">
-      <h2>My approach</h2>
-      <p>I learn by doing. Every project in my portfolio represents a real challenge I've tackled — not a tutorial I followed. I believe the best way to grow as a developer is to build things, break them, fix them, and ship them.</p>
+    <div class="about-section reveal">
+      <h2><i class="fa-solid fa-compass" style="color:var(--accent); margin-right:10px; font-size:0.85em;" aria-hidden="true"></i>What's next</h2>
+      <p>I'm looking for an AI/ML Engineer or Python Backend Developer role where I can take pipelines like these from personal projects to production systems — and keep shipping things that are measured, not just demoed.</p>
     </div>
 
-    <div class="about-skills">
+    <div class="about-skills reveal">
       <h2>Skills</h2>
       <div class="skills-grid">
-        <div class="skill-item"><span class="skill-icon">🐍</span> Python</div>
-        <div class="skill-item"><span class="skill-icon">⚗️</span> Flask</div>
-        <div class="skill-item"><span class="skill-icon">🤖</span> AI / ML</div>
-        <div class="skill-item"><span class="skill-icon">📊</span> Data Science</div>
-        <div class="skill-item"><span class="skill-icon">🧬</span> Scikit-learn</div>
-        <div class="skill-item"><span class="skill-icon">🐼</span> Pandas</div>
-        <div class="skill-item"><span class="skill-icon">🔢</span> NumPy</div>
-        <div class="skill-item"><span class="skill-icon">🗄️</span> SQL</div>
-        <div class="skill-item"><span class="skill-icon">⚡</span> Supabase</div>
-        <div class="skill-item"><span class="skill-icon">🎨</span> HTML/CSS</div>
-        <div class="skill-item"><span class="skill-icon">🧩</span> Jinja2</div>
-        <div class="skill-item"><span class="skill-icon">🖥️</span> Tkinter</div>
-        <div class="skill-item"><span class="skill-icon">🐙</span> Git</div>
-        <div class="skill-item"><span class="skill-icon">🎮</span> Pygame</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-python" aria-hidden="true"></i></span> Python</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-flask" aria-hidden="true"></i></span> Flask</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-brain" aria-hidden="true"></i></span> AI / ML</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span> Data Science</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-gears" aria-hidden="true"></i></span> Scikit-learn</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-table" aria-hidden="true"></i></span> Pandas</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-square-root-variable" aria-hidden="true"></i></span> NumPy</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span> SQL</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span> Supabase</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-html5" aria-hidden="true"></i></span> HTML/CSS</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-file-code" aria-hidden="true"></i></span> Jinja2</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-desktop" aria-hidden="true"></i></span> Tkinter</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-git-alt" aria-hidden="true"></i></span> Git</div>
+        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-gamepad" aria-hidden="true"></i></span> Pygame</div>
       </div>
     </div>
 
-    <div class="about-links-section">
-      <a href="https://github.com/Shakir-Raza" target="_blank" class="btn btn-outline">GitHub →</a>
-      <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" class="btn btn-outline">LinkedIn →</a>
-      <a href="mailto:razashakir919@gmail.com" class="btn btn-outline">Email →</a>
+    <div class="about-links-section reveal">
+      <a href="https://github.com/Shakir-Raza" target="_blank" class="btn btn-outline"><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</a>
+      <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" class="btn btn-outline"><i class="fa-brands fa-linkedin" aria-hidden="true"></i> LinkedIn</a>
+      <a href="mailto:razashakir919@gmail.com" class="btn btn-outline"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Email</a>
       <a href="/static/cv.pdf" download class="btn btn-accent">Download CV</a>
     </div>
 
   </div>
 </div>
+</main>
 
-<footer>
-  <div class="footer-links">
-    <a href="https://github.com/Shakir-Raza" target="_blank">GitHub</a>
-    <a href="https://www.linkedin.com/in/shakir-raza" target="_blank">LinkedIn</a>
-    <a href="mailto:razashakir919@gmail.com">Email</a>
-  </div>
-  <div class="footer-copy">© 2026 Shakir Raza — Built with Flask + Supabase</div>
-</footer>
+{% include '_footer.html' %}
 
-<!-- CONTACT MODAL -->
-<div class="modal-overlay" id="contactModal" onclick="if(event.target===this)closeContact()">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3>Get in <span>touch</span></h3>
-      <button class="modal-close" onclick="closeContact()">✕</button>
-    </div>
-    <div class="contact-items">
-      <div class="contact-item">
-        <div class="contact-icon">✉</div>
-        <div class="contact-info">
-          <div class="contact-label">Email</div>
-          <div class="contact-value">razashakir919@gmail.com</div>
-        </div>
-        <button class="copy-btn" onclick="copyText('razashakir919@gmail.com', this)">Copy</button>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon">🐙</div>
-        <div class="contact-info">
-          <div class="contact-label">GitHub</div>
-          <div class="contact-value">github.com/Shakir-Raza</div>
-        </div>
-        <button class="copy-btn" onclick="copyText('https://github.com/Shakir-Raza', this)">Copy</button>
-      </div>
-      <div class="contact-item">
-        <div class="contact-icon">💼</div>
-        <div class="contact-info">
-          <div class="contact-label">LinkedIn</div>
-          <div class="contact-value">linkedin.com/in/shakir-raza</div>
-        </div>
-        <button class="copy-btn" onclick="copyText('https://www.linkedin.com/in/shakir-raza', this)">Copy</button>
-      </div>
-    </div>
-  </div>
-</div>
+{% include '_contact_modal.html' %}
 
-<script>
-function openContact() { document.getElementById('contactModal').classList.add('show'); }
-function closeContact() { document.getElementById('contactModal').classList.remove('show'); }
-function copyText(text, btn) {
-  navigator.clipboard.writeText(text);
-  btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = 'Copy', 2000);
-}
-</script>
+{% include '_shared_scripts.html' %}
 
 </body>
 </html>

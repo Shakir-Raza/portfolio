@@ -2,27 +2,132 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <title>Edit Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Project — Shakir Raza</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-<div style="max-width:600px; margin:60px auto; padding:20px;">
-  <h2>Edit Project</h2>
-  <form method="POST">
-    <input type="text" name="title" value="{{ project.title }}" placeholder="Title" required style="width:100%;margin-bottom:10px;padding:8px;"><br>
-    <textarea name="description" placeholder="Description" required style="width:100%;margin-bottom:10px;padding:8px;">{{ project.description }}</textarea><br>
-    <input type="text" name="live_url" value="{{ project.live_url or '' }}" placeholder="Live URL" style="width:100%;margin-bottom:10px;padding:8px;"><br>
-    <input type="text" name="github_url" value="{{ project.github_url or '' }}" placeholder="GitHub URL" style="width:100%;margin-bottom:10px;padding:8px;"><br>
-    <input type="text" name="tags" value="{{ project.tags | join(', ') }}" placeholder="Tags (comma separated)" style="width:100%;margin-bottom:10px;padding:8px;"><br>
-    <select name="category" style="width:100%;margin-bottom:10px;padding:8px;">
-      <option value="fullstack" {{ 'selected' if project.category == 'fullstack' }}>Full Stack</option>
-      <option value="ml" {{ 'selected' if project.category == 'ml' }}>ML/AI</option>
-      <option value="data" {{ 'selected' if project.category == 'data' }}>Data Science</option>
-      <option value="other" {{ 'selected' if project.category == 'other' }}>Other</option>
-    </select><br>
-    <button type="submit" style="padding:10px 20px;">Save Changes</button>
-    <a href="/admin" style="margin-left:10px;">Cancel</a>
-  </form>
+
+<a href="#main" class="skip-link">Skip to content</a>
+
+<nav>
+  <a href="/" class="nav-logo">S<span>R</span></a>
+  <div class="nav-links">
+    <a href="/admin">Admin</a>
+  </div>
+</nav>
+
+<main id="main">
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>Edit Project</h1>
+    <a href="/admin" class="btn btn-outline">Cancel</a>
+  </div>
+
+  <div class="admin-form-box" style="max-width: 700px;">
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" value="{{ project.title }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" required>{{ project.description }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="live_url">Live URL</label>
+        <input type="text" id="live_url" name="live_url" value="{{ project.live_url or '' }}">
+      </div>
+
+      <div class="form-group">
+        <label for="github_url">GitHub URL</label>
+        <input type="text" id="github_url" name="github_url" value="{{ project.github_url or '' }}">
+      </div>
+
+      <div class="form-group">
+        <label for="tags">Tags (comma separated)</label>
+        <input type="text" id="tags" name="tags" value="{{ project.tags | join(', ') }}">
+      </div>
+
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          <option value="fullstack" {{ 'selected' if project.category == 'fullstack' }}>Full Stack</option>
+          <option value="ml" {{ 'selected' if project.category == 'ml' }}>ML/AI</option>
+          <option value="data" {{ 'selected' if project.category == 'data' }}>Data Science</option>
+          <option value="other" {{ 'selected' if project.category == 'other' }}>Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="live" {{ 'selected' if project.status == 'live' or not project.status }}>Live</option>
+          <option value="coming_soon" {{ 'selected' if project.status == 'coming_soon' }}>Coming soon</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="featured_rank">Featured order (lower = shown earlier, leave blank for default)</label>
+        <input type="number" id="featured_rank" name="featured_rank" value="{{ project.featured_rank if project.featured_rank is not none else '' }}" min="1">
+      </div>
+
+      <div class="detail-section" style="margin-top: var(--space-6); padding-top: var(--space-5);">
+        <h2 style="font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: var(--space-4);">Case study (optional — requires the Supabase migration to be run first)</h2>
+
+        <div class="form-group">
+          <label for="problem">Problem</label>
+          <textarea id="problem" name="problem" placeholder="What gap or need does this project address?">{{ project.problem or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="solution">Solution</label>
+          <textarea id="solution" name="solution" placeholder="What did you build to solve it?">{{ project.solution or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="architecture">Architecture</label>
+          <textarea id="architecture" name="architecture" placeholder="e.g. Adzuna API → Pandas clean → Supabase → Flask → Plotly">{{ project.architecture or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="challenges">Challenges</label>
+          <textarea id="challenges" name="challenges" placeholder="What was genuinely hard about this?">{{ project.challenges or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="results">Results</label>
+          <textarea id="results" name="results" placeholder="Concrete outcomes, metrics, what it does today">{{ project.results or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="lessons_learned">Lessons Learned</label>
+          <textarea id="lessons_learned" name="lessons_learned">{{ project.lessons_learned or '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="future_improvements">Future Improvements</label>
+          <textarea id="future_improvements" name="future_improvements">{{ project.future_improvements or '' }}</textarea>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: var(--space-3); margin-top: var(--space-5);">
+        <button type="submit" class="btn btn-accent">Save Changes</button>
+        <a href="/admin" class="btn btn-outline">Cancel</a>
+      </div>
+
+    </form>
+  </div>
 </div>
+</main>
+
 </body>
 </html>

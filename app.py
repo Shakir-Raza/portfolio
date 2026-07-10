@@ -4,13 +4,25 @@ from dotenv import load_dotenv
 from groq import Groq
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 import os
 import re
+import hmac
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
+
+# Reject any upload over 10MB before it's even fully read into memory —
+# protects against someone POSTing a huge file to exhaust server resources.
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+
+# CSRF protection on every state-changing (POST/PUT/PATCH/DELETE) route.
+# Forms need a hidden {{ csrf_token() }} field — already added to
+# login.html, admin.html, and edit_project.html. /chat is exempted below
+# since it's a read-only JSON API called via fetch(), not a session-changing form.
+csrf = CSRFProtect(app)
 
 supabase = create_client(
     os.getenv("SUPABASE_URL"),
@@ -27,36 +39,34 @@ limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "5
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
+# Magic-byte check — verifies the file's actual content, not just the
+# filename extension or the browser-supplied content-type (both spoofable).
+def is_allowed_image(b):
+    return (b.startswith(b"\xff\xd8\xff") or b.startswith(b"\x89PNG\r\n\x1a\n")
+            or b.startswith((b"GIF87a", b"GIF89a"))
+            or (b[:4] == b"RIFF" and b[8:12] == b"WEBP"))
+
+def is_allowed_pdf(file_bytes):
+    return file_bytes.startswith(b"%PDF-")
+
 SYSTEM_PROMPT = """
 You are Shakir Raza's personal AI assistant on his portfolio website.
 Answer questions about Shakir naturally and helpfully.
 
 About Shakir:
-- Name: Shakir Raza
-- Location: Karachi, Pakistan
-- He is a CS student passionate about technology
-- Specializes in Full Stack Development, AI/ML, and Data Science
-- Currently building projects to sharpen his skills and showcase them
+- AI/ML Engineer & Python Backend Developer, final-year CS student in Karachi, Pakistan
+- NAVTTC-certified in AI & Machine Learning; completing Saylani's AI & Data Science program
+- Builds end-to-end ML pipelines and Flask/Supabase backends, not just notebooks
+- Highlight: a salary-prediction model at 0.112 RMSLE (Ridge regression, compared against XGBoost/LightGBM/GradientBoosting)
 
-Skills:
-- Python, Flask, HTML/CSS, Jinja2
-- Tkinter for desktop apps
-- AI/ML with Scikit-learn, Pandas, NumPy
-- Data Science and data analysis
-- SQL and Supabase
-- Git and GitHub
-
-Projects:
-- Library Management System: Desktop app built with Python & Tkinter using BST and Queue data structures. Has role-based login for librarians and users.
-- Snake Game: Classic snake game built with Python and Pygame
-- Portfolio Website: This website! Built with Flask, Supabase, and deployed on Railway
+Skills: Python, Flask, Scikit-learn, Pandas, NumPy, SQL, Supabase, HTML/CSS, Jinja2, Tkinter, Git, Pygame
 
 Contact:
 - Email: razashakir919@gmail.com
 - GitHub: https://github.com/Shakir-Raza
 - LinkedIn: https://www.linkedin.com/in/shakir-raza
 
-Availability: Shakir is currently available for work and open to exciting opportunities.
+Availability: currently available for work.
 
 Remember: SHORT answers only. 2-3 sentences maximum. No bullet points ever.
 """
@@ -95,6 +105,7 @@ def project_detail(slug):
 # ── CHATBOT ROUTE ──────────────────────────────────────────
 @app.route("/chat", methods=["POST"])
 @limiter.limit("20 per minute")
+@csrf.exempt
 def chat():
     try:
         data = request.get_json()
@@ -130,7 +141,7 @@ def chat():
         return jsonify({"reply": "Sorry, I'm having trouble right now. Please try again!"})
 # ── ADMIN ROUTES ───────────────────────────────────────────
 
-@app.route("/admin", methods=["GET", "POST"])
+@app.route("/admin")
 def admin():
     if not session.get("admin"):
         return redirect(url_for("login"))
@@ -139,10 +150,14 @@ def admin():
     return render_template("admin.html", projects=projects)
 
 @app.route("/admin/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def login():
     if request.method == "POST":
-        password = request.form.get("password")
-        if password == ADMIN_PASSWORD:
+        password = request.form.get("password", "")
+        # hmac.compare_digest instead of == — prevents timing attacks, where
+        # an attacker measures response time to guess the password
+        # character-by-character. Both sides must be bytes of a fixed type.
+        if ADMIN_PASSWORD and hmac.compare_digest(password.encode(), ADMIN_PASSWORD.encode()):
             session["admin"] = True
             return redirect(url_for("admin"))
         else:
@@ -174,6 +189,9 @@ def add_project():
         if image and image.filename:
             try:
                 file_bytes = image.read()
+                if not is_allowed_image(file_bytes):
+                    print(f"Rejected upload '{image.filename}': not a recognized image format")
+                    continue
                 file_ext = image.filename.rsplit(".", 1)[-1].lower()
                 file_name = f"{slug}-{i}.{file_ext}"
                 supabase_admin.storage.from_("project-images").upload(
@@ -218,6 +236,20 @@ def edit_project(id):
         tags = [t.strip() for t in request.form.get("tags", "").split(",") if t.strip()]
         category = request.form.get("category", "other")
 
+        # Case-study fields — see supabase-migration-case-study-fields.sql.
+        # These only take effect once that migration has been run; the
+        # columns must exist in Supabase before this update() call will work.
+        status = request.form.get("status", "live")
+        problem = request.form.get("problem")
+        solution = request.form.get("solution")
+        architecture = request.form.get("architecture")
+        challenges = request.form.get("challenges")
+        results = request.form.get("results")
+        lessons_learned = request.form.get("lessons_learned")
+        future_improvements = request.form.get("future_improvements")
+        featured_rank_raw = request.form.get("featured_rank", "").strip()
+        featured_rank = int(featured_rank_raw) if featured_rank_raw.isdigit() else None
+
         supabase.table("projects").update({
             "title": title,
             "description": description,
@@ -225,6 +257,15 @@ def edit_project(id):
             "github_url": github_url,
             "tags": tags,
             "category": category,
+            "status": status,
+            "problem": problem,
+            "solution": solution,
+            "architecture": architecture,
+            "challenges": challenges,
+            "results": results,
+            "lessons_learned": lessons_learned,
+            "future_improvements": future_improvements,
+            "featured_rank": featured_rank,
         }).eq("id", id).execute()
 
         flash("Project updated!")
@@ -248,13 +289,40 @@ def upload_cv():
         return redirect(url_for("login"))
     cv = request.files.get("cv")
     if cv and cv.filename:
-        cv.save(os.path.join("static", "cv.pdf"))
+        file_bytes = cv.read()
+        if not is_allowed_pdf(file_bytes):
+            flash("That file doesn't look like a valid PDF.")
+            return redirect(url_for("admin"))
+        with open(os.path.join("static", "cv.pdf"), "wb") as f:
+            f.write(file_bytes)
         flash("CV uploaded successfully!")
     return redirect(url_for("admin"))
 
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+@app.route("/robots.txt")
+def robots():
+    body = "User-agent: *\nAllow: /\nSitemap: https://shakirraza.up.railway.app/sitemap.xml\n"
+    return app.response_class(body, mimetype="text/plain")
+
+@app.route("/sitemap.xml")
+def sitemap():
+    base = "https://shakirraza.up.railway.app"
+    result = supabase.table("projects").select("slug").execute()
+    projects = result.data
+
+    urls = [f"{base}/", f"{base}/about"]
+    urls += [f"{base}/projects/{p['slug']}" for p in projects]
+
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for u in urls:
+        xml.append(f"  <url><loc>{u}</loc></url>")
+    xml.append("</urlset>")
+
+    return app.response_class("\n".join(xml), mimetype="application/xml")
 
 @app.errorhandler(404)
 def not_found(e):

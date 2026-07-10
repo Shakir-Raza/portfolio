@@ -4,9 +4,14 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Panel</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+
+<a href="#main" class="skip-link">Skip to content</a>
 
 <nav>
   <a href="/" class="nav-logo">S<span>R</span></a>
@@ -16,7 +21,7 @@
   </div>
 </nav>
 
-<div class="admin-container">
+<div class="admin-container" id="main">
   <div class="admin-header">
     <h1>Admin <span style="color:var(--accent)">Panel</span></h1>
     <span class="section-title">{{ projects|length }} projects</span>
@@ -36,29 +41,30 @@
     <div class="admin-form-box">
       <h2>Add New Project</h2>
       <form method="POST" action="/admin/add" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
-          <label>Project Title *</label>
-          <input type="text" name="title" placeholder="My Awesome Project" required/>
+          <label for="title">Project Title *</label>
+          <input type="text" id="title" name="title" placeholder="My Awesome Project" required/>
         </div>
         <div class="form-group">
-          <label>Description</label>
-          <textarea name="description" placeholder="What does this project do?"></textarea>
+          <label for="add-description">Description</label>
+          <textarea id="add-description" name="description" placeholder="What does this project do?"></textarea>
         </div>
         <div class="form-group">
-          <label>Live URL</label>
-          <input type="url" name="live_url" placeholder="https://myproject.com"/>
+          <label for="add-live_url">Live URL</label>
+          <input type="url" id="add-live_url" name="live_url" placeholder="https://myproject.com"/>
         </div>
         <div class="form-group">
-          <label>GitHub URL</label>
-          <input type="url" name="github_url" placeholder="https://github.com/..."/>
+          <label for="add-github_url">GitHub URL</label>
+          <input type="url" id="add-github_url" name="github_url" placeholder="https://github.com/..."/>
         </div>
         <div class="form-group">
-          <label>Tags (comma separated)</label>
-          <input type="text" name="tags" placeholder="Python, Flask, Supabase"/>
+          <label for="add-tags">Tags (comma separated)</label>
+          <input type="text" id="add-tags" name="tags" placeholder="Python, Flask, Supabase"/>
         </div>
         <div class="form-group">
-          <label>Project Images (select multiple)</label>
-          <input type="file" name="images" accept="image/*" multiple/>
+          <label for="add-images">Project Images (select multiple)</label>
+          <input type="file" id="add-images" name="images" accept="image/*" multiple/>
           <small style="color: var(--muted); font-size: 0.75rem; margin-top: 0.3rem; display: block;">First image will be used as thumbnail</small>
         </div>
         <button type="submit" class="btn btn-accent" style="width:100%; padding:0.8rem; margin-top:0.5rem;">
@@ -80,7 +86,9 @@
           </div>
           <div style="display:flex; gap:0.5rem; align-items:center;">
             <a href="/projects/{{ project.slug }}" target="_blank" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 1rem;">View</a>
+            <a href="/admin/edit/{{ project.id }}" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 1rem;">Edit</a>
             <form method="POST" action="/admin/delete/{{ project.id }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this project?')">Delete</button>
             </form>
           </div>
@@ -89,7 +97,7 @@
       </div>
       {% else %}
       <div class="empty-state">
-        <div class="big">⬡</div>
+        <div class="big"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i></div>
         <p>No projects yet. Add your first one!</p>
       </div>
       {% endif %}
@@ -100,9 +108,10 @@
   <div class="admin-form-box" style="margin-top: 2rem;">
     <h2>Upload CV</h2>
     <form method="POST" action="/admin/upload-cv" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
-        <label>CV File (PDF)</label>
-        <input type="file" name="cv" accept=".pdf"/>
+        <label for="cv">CV File (PDF)</label>
+        <input type="file" id="cv" name="cv" accept=".pdf"/>
       </div>
       <button type="submit" class="btn btn-accent" style="width:100%; padding:0.8rem;">
       Upload CV →
