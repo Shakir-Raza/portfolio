@@ -10,7 +10,7 @@
   <meta property="og:title" content="Shakir Raza | AI &amp; ML Engineer">
   <meta property="og:description" content="AI/ML Engineer and Python backend developer in Karachi. I build end-to-end ML pipelines and Flask backends — from a house-price model at 0.112 RMSLE to production LLM chatbots.">
   <meta property="og:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
-  <meta property="og:url" content="https://shakirraza.up.railway.app/">
+  <meta property="og:url" content="{{ request.url_root }}">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Shakir Raza | AI &amp; ML Engineer">
@@ -18,7 +18,7 @@
   <meta name="twitter:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
 
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-  <link rel="canonical" href="https://shakirraza.up.railway.app/">
+  <link rel="canonical" href="{{ request.url_root }}">
 
   <script type="application/ld+json">
   {
@@ -26,7 +26,7 @@
     "@type": "Person",
     "name": "Shakir Raza",
     "jobTitle": "AI/ML Engineer & Python Backend Developer",
-    "url": "https://shakirraza.up.railway.app/",
+    "url": "{{ request.url_root }}",
     "sameAs": [
       "https://github.com/Shakir-Raza",
       "https://www.linkedin.com/in/shakir-raza"
