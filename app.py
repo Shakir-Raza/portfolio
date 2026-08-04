@@ -328,10 +328,6 @@ def edit_project(id):
         github_url = request.form.get("github_url")
         tags = [t.strip() for t in request.form.get("tags", "").split(",") if t.strip()]
         category = request.form.get("category", "other")
-
-        # Case-study fields — see supabase-migration-case-study-fields.sql.
-        # These only take effect once that migration has been run; the
-        # columns must exist in Supabase before this update() call will work.
         status = request.form.get("status", "live")
         problem = request.form.get("problem")
         solution = request.form.get("solution")
@@ -342,6 +338,61 @@ def edit_project(id):
         future_improvements = request.form.get("future_improvements")
         featured_rank_raw = request.form.get("featured_rank", "").strip()
         featured_rank = int(featured_rank_raw) if featured_rank_raw.isdigit() else None
+
+        # Load current project for existing images
+        current = supabase.table("projects").select("*").eq("id", id).execute()
+        if not current.data:
+            flash("Project not found.")
+            return redirect(url_for("admin"))
+        project = current.data[0]
+
+        existing = list(project.get("images") or [])
+        if not existing and project.get("image_url"):
+            existing = [project["image_url"]]
+
+        # Remove checked images
+        remove_urls = set(request.form.getlist("remove_images"))
+        kept = [u for u in existing if u not in remove_urls]
+
+        # Try delete removed files from Supabase storage (best-effort)
+        for url in remove_urls:
+            try:
+                # public URL ends with /project-images/<filename>
+                if "/project-images/" in url:
+                    file_name = url.split("/project-images/")[-1].split("?")[0]
+                    supabase_admin.storage.from_("project-images").remove([file_name])
+            except Exception as e:
+                print("Storage delete error:", e)
+
+        # Upload newly added images
+        slug = project.get("slug") or slugify(title or "project")
+        new_urls = []
+        images = request.files.getlist("images")
+        start_i = len(kept)
+        for i, image in enumerate(images):
+            if image and image.filename:
+                try:
+                    file_bytes = image.read()
+                    if not is_allowed_image(file_bytes):
+                        print(f"Rejected upload '{image.filename}': not a recognized image format")
+                        continue
+                    optimized, content_type, opt_ext = optimize_image(file_bytes)
+                    file_ext = opt_ext or image.filename.rsplit(".", 1)[-1].lower()
+                    content_type = content_type or image.content_type or "image/jpeg"
+                    file_name = f"{slug}-{start_i + i}.{file_ext}"
+                    supabase_admin.storage.from_("project-images").upload(
+                        file_name,
+                        optimized,
+                        {"content-type": content_type, "upsert": "true"}
+                    )
+                    supabase_url = os.getenv("SUPABASE_URL")
+                    url = f"{supabase_url}/storage/v1/object/public/project-images/{file_name}"
+                    new_urls.append(url)
+                except Exception as e:
+                    print("Image upload error:", e)
+
+        all_images = kept + new_urls
+        image_url = all_images[0] if all_images else ""
 
         supabase.table("projects").update({
             "title": title,
@@ -359,6 +410,8 @@ def edit_project(id):
             "lessons_learned": lessons_learned,
             "future_improvements": future_improvements,
             "featured_rank": featured_rank,
+            "images": all_images,
+            "image_url": image_url,
         }).eq("id", id).execute()
 
         flash("Project updated!")
@@ -367,6 +420,7 @@ def edit_project(id):
     result = supabase.table("projects").select("*").eq("id", id).execute()
     project = result.data[0]
     return render_template("edit_project.html", project=project)
+
 
 @app.route("/admin/delete/<id>", methods=["POST"])
 def delete_project(id):
@@ -398,7 +452,7 @@ def services():
 @app.route("/contact", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def contact():
-    """Public contact form. Logs the message; optional SMTP if env is configured."""
+    """Public contact form — emails you when SMTP or RESEND is configured."""
     if request.method == "POST":
         name = (request.form.get("name") or "").strip()
         email = (request.form.get("email") or "").strip()
@@ -412,15 +466,55 @@ def contact():
             flash("Message is too long.", "error")
             return render_template("contact.html"), 400
 
-        # Always log so you can see inquiries in Render logs
-        print(f"[CONTACT] from={name!r} email={email!r} subject={subject!r}\n{message}")
+        body = f"From: {name} <{email}>\nSubject: {subject}\n\n{message}"
+        print(f"[CONTACT]\n{body}")
 
-        # Optional: send email when SMTP settings exist
+        # Append to a local log file (works on Render disk ephemerally + localhost)
+        try:
+            log_dir = os.path.join(os.path.dirname(__file__) or ".", "instance")
+            os.makedirs(log_dir, exist_ok=True)
+            with open(os.path.join(log_dir, "contact_messages.log"), "a", encoding="utf-8") as f:
+                from datetime import datetime
+                f.write(f"\n--- {datetime.utcnow().isoformat()}Z ---\n{body}\n")
+        except Exception as e:
+            print("Contact log write error:", e)
+
+        sent = False
+        notify_to = os.getenv("CONTACT_TO") or "razashakir919@gmail.com"
+
+        # 1) Resend.com API (simple — set RESEND_API_KEY in .env)
+        resend_key = os.getenv("RESEND_API_KEY")
+        if resend_key and not sent:
+            try:
+                import urllib.request
+                import json as _json
+                payload = _json.dumps({
+                    "from": os.getenv("RESEND_FROM") or "Portfolio <onboarding@resend.dev>",
+                    "to": [notify_to],
+                    "reply_to": email,
+                    "subject": f"[Portfolio] {subject}",
+                    "text": body,
+                }).encode()
+                req = urllib.request.Request(
+                    "https://api.resend.com/emails",
+                    data=payload,
+                    headers={
+                        "Authorization": f"Bearer {resend_key}",
+                        "Content-Type": "application/json",
+                    },
+                    method="POST",
+                )
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    if 200 <= resp.status < 300:
+                        sent = True
+            except Exception as e:
+                print("Resend error:", e)
+
+        # 2) Classic SMTP (Gmail app password, etc.)
         smtp_host = os.getenv("SMTP_HOST")
         smtp_user = os.getenv("SMTP_USER")
         smtp_pass = os.getenv("SMTP_PASS")
-        notify_to = os.getenv("CONTACT_TO") or "razashakir919@gmail.com"
-        if smtp_host and smtp_user and smtp_pass:
+        if smtp_host and smtp_user and smtp_pass and not sent:
             try:
                 import smtplib
                 from email.message import EmailMessage
@@ -429,18 +523,29 @@ def contact():
                 msg["From"] = smtp_user
                 msg["To"] = notify_to
                 msg["Reply-To"] = email
-                msg.set_content(f"From: {name} <{email}>\n\n{message}")
-                with smtplib.SMTP(smtp_host, int(os.getenv("SMTP_PORT") or 587)) as s:
+                msg.set_content(body)
+                port = int(os.getenv("SMTP_PORT") or 587)
+                with smtplib.SMTP(smtp_host, port, timeout=20) as s:
                     s.starttls()
                     s.login(smtp_user, smtp_pass)
                     s.send_message(msg)
+                sent = True
             except Exception as e:
-                print("Contact email send error:", e)
+                print("SMTP error:", e)
 
-        flash("Thanks — your message was received. I will reply by email.", "success")
+        if sent:
+            flash("Thanks — your message was sent. I will reply by email.", "success")
+        else:
+            # Form still "works" but you must configure email to receive inbox mail
+            flash(
+                "Message saved on the server. Email delivery is not configured yet — "
+                "set RESEND_API_KEY or SMTP_* in .env (see README).",
+                "success",
+            )
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
+
 
 @app.route("/about")
 def about():

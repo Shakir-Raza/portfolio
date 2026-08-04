@@ -4,9 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Edit Project — Shakir Raza</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
@@ -18,6 +17,7 @@
   <a href="/" class="nav-logo">S<span>R</span></a>
   <div class="nav-links">
     <a href="/admin">Admin</a>
+    <a href="/admin/logout" class="btn btn-outline">Logout</a>
   </div>
 </nav>
 
@@ -29,7 +29,7 @@
   </div>
 
   <div class="admin-form-box" style="max-width: 700px;">
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="form-group">
@@ -54,7 +54,7 @@
 
       <div class="form-group">
         <label for="tags">Tags (comma separated)</label>
-        <input type="text" id="tags" name="tags" value="{{ project.tags | join(', ') }}">
+        <input type="text" id="tags" name="tags" value="{{ project.tags | join(', ') if project.tags else '' }}">
       </div>
 
       <div class="form-group">
@@ -63,7 +63,7 @@
           <option value="fullstack" {{ 'selected' if project.category == 'fullstack' }}>Full Stack</option>
           <option value="ml" {{ 'selected' if project.category == 'ml' }}>ML/AI</option>
           <option value="data" {{ 'selected' if project.category == 'data' }}>Data Science</option>
-          <option value="other" {{ 'selected' if project.category == 'other' }}>Other</option>
+          <option value="other" {{ 'selected' if project.category == 'other' or not project.category }}>Other</option>
         </select>
       </div>
 
@@ -80,8 +80,39 @@
         <input type="number" id="featured_rank" name="featured_rank" value="{{ project.featured_rank if project.featured_rank is not none else '' }}" min="1">
       </div>
 
+      <!-- IMAGES -->
       <div class="detail-section" style="margin-top: var(--space-6); padding-top: var(--space-5);">
-        <h2 style="font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: var(--space-4);">Case study (optional — requires the Supabase migration to be run first)</h2>
+        <h2 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: var(--space-4);">Images</h2>
+
+        {% set imgs = project.images if project.images else ([project.image_url] if project.image_url else []) %}
+        {% if imgs %}
+        <p class="form-hint" style="margin-bottom: 0.75rem;">Current images — check <strong>Remove</strong> to delete on save. First remaining image becomes the thumbnail.</p>
+        <div class="image-preview-grid" style="margin-bottom: 1.25rem;">
+          {% for url in imgs %}
+          <label class="image-preview-item edit-image-item" style="cursor: pointer;">
+            <img src="{{ url }}" alt="Project image {{ loop.index }}" loading="lazy"/>
+            {% if loop.first %}<span class="preview-thumb-label">Thumbnail</span>{% endif %}
+            <span class="edit-image-remove">
+              <input type="checkbox" name="remove_images" value="{{ url }}"/>
+              Remove
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="form-hint" style="margin-bottom: 0.75rem;">No images yet.</p>
+        {% endif %}
+
+        <div class="form-group">
+          <label for="edit-images">Add more images</label>
+          <input type="file" id="edit-images" name="images" accept="image/*" multiple/>
+          <small class="form-hint">New images are appended. Resized &amp; compressed on upload.</small>
+          <div id="edit-image-preview" class="image-preview-grid" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="detail-section" style="margin-top: var(--space-6); padding-top: var(--space-5);">
+        <h2 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); margin-bottom: var(--space-4);">Case study (optional — requires the Supabase migration to be run first)</h2>
 
         <div class="form-group">
           <label for="problem">Problem</label>
@@ -128,6 +159,24 @@
   </div>
 </div>
 </main>
+
+<script>
+  const input = document.getElementById('edit-images');
+  const preview = document.getElementById('edit-image-preview');
+  if (input && preview) {
+    input.addEventListener('change', () => {
+      preview.innerHTML = '';
+      Array.from(input.files || []).forEach((file, i) => {
+        if (!file.type.startsWith('image/')) return;
+        const url = URL.createObjectURL(file);
+        const fig = document.createElement('div');
+        fig.className = 'image-preview-item';
+        fig.innerHTML = '<img src="' + url + '" alt="New preview ' + (i + 1) + '"/>';
+        preview.appendChild(fig);
+      });
+    });
+  }
+</script>
 
 </body>
 </html>

@@ -873,3 +873,29 @@ footer {
 @media (max-width: 800px) {
   .contact-layout { grid-template-columns: 1fr; }
 }
+
+
+/* Edit project — image remove control */
+.edit-image-item {
+  display: block;
+  position: relative;
+}
+.edit-image-remove {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.72);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.edit-image-remove input {
+  width: auto;
+  margin: 0;
+  accent-color: var(--danger);
+}
