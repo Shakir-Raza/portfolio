@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact — Shakir Raza</title>
+  <meta name="description" content="Get in touch with Shakir Raza — AI/ML Engineer in Karachi. Project inquiries, internships, and collaborations.">
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}/contact">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+{% set active_page = 'contact' %}
+{% include '_nav.html' %}
+<main id="main">
+<div class="page-shell">
+  <header class="page-header reveal">
+    <p class="section-label">Contact</p>
+    <h1 class="page-title">Let’s talk</h1>
+    <p class="page-lead">Project ideas, internships, freelance work, or a quick question — send a message and I’ll reply by email.</p>
+  </header>
+
+  <div class="contact-layout">
+    <form class="contact-form reveal" method="POST" action="/contact">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required maxlength="100" autocomplete="name" placeholder="Your name"/>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required maxlength="200" autocomplete="email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" maxlength="150" placeholder="What’s this about?"/>
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" required maxlength="4000" rows="6" placeholder="Tell me a bit about the role, project, or question…"></textarea>
+      </div>
+      <button type="submit" class="btn btn-accent">Send message</button>
+      <p class="form-hint" style="margin-top: 0.75rem;">I’ll get this in my inbox at razashakir919@gmail.com</p>
+    </form>
+
+    <aside class="contact-aside reveal">
+      <h2 class="aside-title">Other ways</h2>
+      <ul class="contact-aside-list">
+        <li>
+          <span class="aside-label">Email</span>
+          <a href="mailto:razashakir919@gmail.com">razashakir919@gmail.com</a>
+        </li>
+        <li>
+          <span class="aside-label">GitHub</span>
+          <a href="https://github.com/Shakir-Raza" target="_blank" rel="noopener">github.com/Shakir-Raza</a>
+        </li>
+        <li>
+          <span class="aside-label">LinkedIn</span>
+          <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" rel="noopener">linkedin.com/in/shakir-raza</a>
+        </li>
+        <li>
+          <span class="aside-label">Location</span>
+          <span>Karachi, Pakistan · Remote-friendly</span>
+        </li>
+      </ul>
+      <a href="/static/cv.pdf" download class="btn btn-outline" style="margin-top: 1.5rem;">Download CV</a>
+    </aside>
+  </div>
+</div>
+</main>
+{% include '_footer.html' %}
+{% include '_contact_modal.html' %}
+{% include '_shared_scripts.html' %}
+</body>
+</html>

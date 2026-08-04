@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Services — Shakir Raza</title>
+  <meta name="description" content="Services by Shakir Raza — full-stack development, AI/ML pipelines, data scraping, Flask APIs, dashboards, and LLM features.">
+  <meta property="og:title" content="Services — Shakir Raza">
+  <meta property="og:description" content="Full-stack apps, ML pipelines, scraping, Flask APIs, and practical LLM features.">
+  <meta property="og:url" content="{{ request.url_root.rstrip('/') }}/services">
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}/services">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+{% set active_page = 'services' %}
+{% include '_nav.html' %}
+<main id="main">
+<div class="page-shell">
+
+  <header class="page-header reveal">
+    <p class="section-label">Services</p>
+    <h1 class="page-title">What I can build for you</h1>
+    <p class="page-lead">
+      End-to-end work across full-stack apps, AI/ML pipelines, data scraping, and practical LLM features.
+      Scoped projects with a clear “done” — not endless meetings. Final-year CS, based in Karachi, remote-friendly.
+    </p>
+  </header>
+
+  <div class="services-grid">
+
+    <article class="service-card reveal">
+      <div class="service-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></div>
+      <h2>Full-stack development</h2>
+      <p>Small to mid products from UI to database: Flask backends, clean frontends, auth, admin panels, and deploy-ready structure.</p>
+      <ul class="service-list">
+        <li>Flask + Jinja + HTML/CSS</li>
+        <li>Supabase / Postgres, sessions, CRUD</li>
+        <li>Admin CMS, file uploads, env-based config</li>
+        <li>Landing pages and portfolio-style sites</li>
+      </ul>
+    </article>
+
+    <article class="service-card reveal">
+      <div class="service-icon"><i class="fa-solid fa-brain" aria-hidden="true"></i></div>
+      <h2>AI &amp; ML pipelines</h2>
+      <p>From raw data to a model you can defend: preprocessing, baselines, model comparison, and metrics that hold up under review.</p>
+      <ul class="service-list">
+        <li>EDA, cleaning, feature prep (Pandas, NumPy)</li>
+        <li>Scikit-learn, XGBoost, LightGBM, Ridge &amp; more</li>
+        <li>Cross-validation and honest evaluation</li>
+        <li>Notebook → script → simple API handoff</li>
+      </ul>
+    </article>
+
+    <article class="service-card reveal">
+      <div class="service-icon"><i class="fa-solid fa-spider" aria-hidden="true"></i></div>
+      <h2>Data scraping &amp; ingestion</h2>
+      <p>Pull data from APIs or the web, clean it, and store it in a shape you can actually use for analytics or ML.</p>
+      <ul class="service-list">
+        <li>Public APIs (e.g. job boards, open data)</li>
+        <li>Structured scraping where allowed &amp; respectful</li>
+        <li>Deduping, normalization, scheduled-friendly scripts</li>
+        <li>Load into Supabase / CSV / your stack</li>
+      </ul>
+    </article>
+
+    <article class="service-card reveal">
+      <div class="service-icon"><i class="fa-solid fa-server" aria-hidden="true"></i></div>
+      <h2>Backend &amp; REST APIs</h2>
+      <p>Reliable Python services: endpoints, validation, rate limits, storage, and integration with frontends or other tools.</p>
+      <ul class="service-list">
+        <li>REST APIs with Flask</li>
+        <li>Auth-aware routes and admin tools</li>
+        <li>Image/PDF handling and optimization</li>
+        <li>Supabase storage &amp; database wiring</li>
+      </ul>
+    </article>
+
+    <article class="service-card reveal">
+      <div class="service-icon"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></div>
+      <h2>Dashboards &amp; data apps</h2>
+      <p>Turn tables and live feeds into something people can explore — filters, charts, and a simple UI instead of raw spreadsheets.</p>
+      <ul class="service-list">
+        <li>Plotly charts and interactive views</li>
+        <li>Web dashboards on top of cleaned data</li>
+        <li>Internal tools for small teams</li>
+      </ul>
+    </article>
+
+    <article class="service-card reveal">
+      <div class="service-icon"><i class="fa-solid fa-robot" aria-hidden="true"></i></div>
+      <h2>LLM features</h2>
+      <p>Assistants grounded in your content — project FAQs, docs, or database context — with limits so costs stay under control.</p>
+      <ul class="service-list">
+        <li>Groq / OpenAI-style chat integrations</li>
+        <li>Context from DB, docs, or case studies</li>
+        <li>Rate limits, short answers, safe fallbacks</li>
+      </ul>
+    </article>
+
+  </div>
+
+  <section class="services-note reveal">
+    <h2>How we work together</h2>
+    <p>
+      Best results come from a clear slice: one pipeline, one scraper + store, one API, one dashboard, or one full-stack feature.
+      Share the problem, constraints, and deadline — I’ll say what’s realistic for my level, propose a scope, and ship against it.
+      Open to freelance tasks, internships, and junior full-time roles.
+    </p>
+    <div class="hero-ctas" style="margin-top: 1.5rem;">
+      <button type="button" class="btn btn-accent" onclick="openContact()">Discuss a project</button>
+      <a href="/#projects" class="btn btn-outline">See my work</a>
+      <a href="/about" class="btn btn-outline">About me</a>
+    </div>
+  </section>
+
+</div>
+</main>
+{% include '_footer.html' %}
+{% include '_contact_modal.html' %}
+{% include '_shared_scripts.html' %}
+</body>
+</html>

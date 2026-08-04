@@ -109,6 +109,13 @@ Contact:
 
 Availability: currently available for work.
 
+Services he can help with (short freelance / project work):
+- End-to-end ML pipelines and model comparison
+- Flask backends, REST APIs, Supabase
+- Full-stack small apps (Flask + HTML/CSS + DB)
+- Data scraping / API ingestion and cleaning
+- Dashboards and LLM assistant features
+
 Remember: SHORT answers only. 2-3 sentences maximum. No bullet points ever.
 """
 
@@ -263,7 +270,7 @@ def add_project():
     category = request.form.get("category", "other")
     slug = slugify(title)
     image_url = ""
-    image_urls = []
+    image_urls = [f"{SITE_URL}/", f"{SITE_URL}/about", f"{SITE_URL}/services", f"{SITE_URL}/contact"]
 
     images = request.files.getlist("images")
     for i, image in enumerate(images):
@@ -384,6 +391,57 @@ def upload_cv():
         flash("CV uploaded successfully!")
     return redirect(url_for("admin"))
 
+@app.route("/services")
+def services():
+    return render_template("services.html")
+
+@app.route("/contact", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
+def contact():
+    """Public contact form. Logs the message; optional SMTP if env is configured."""
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        subject = (request.form.get("subject") or "").strip() or "Portfolio contact"
+        message = (request.form.get("message") or "").strip()
+
+        if not name or not email or not message:
+            flash("Please fill in name, email, and message.", "error")
+            return render_template("contact.html"), 400
+        if len(message) > 4000:
+            flash("Message is too long.", "error")
+            return render_template("contact.html"), 400
+
+        # Always log so you can see inquiries in Render logs
+        print(f"[CONTACT] from={name!r} email={email!r} subject={subject!r}\n{message}")
+
+        # Optional: send email when SMTP settings exist
+        smtp_host = os.getenv("SMTP_HOST")
+        smtp_user = os.getenv("SMTP_USER")
+        smtp_pass = os.getenv("SMTP_PASS")
+        notify_to = os.getenv("CONTACT_TO") or "razashakir919@gmail.com"
+        if smtp_host and smtp_user and smtp_pass:
+            try:
+                import smtplib
+                from email.message import EmailMessage
+                msg = EmailMessage()
+                msg["Subject"] = f"[Portfolio] {subject}"
+                msg["From"] = smtp_user
+                msg["To"] = notify_to
+                msg["Reply-To"] = email
+                msg.set_content(f"From: {name} <{email}>\n\n{message}")
+                with smtplib.SMTP(smtp_host, int(os.getenv("SMTP_PORT") or 587)) as s:
+                    s.starttls()
+                    s.login(smtp_user, smtp_pass)
+                    s.send_message(msg)
+            except Exception as e:
+                print("Contact email send error:", e)
+
+        flash("Thanks — your message was received. I will reply by email.", "success")
+        return redirect(url_for("contact"))
+
+    return render_template("contact.html")
+
 @app.route("/about")
 def about():
     return render_template("about.html")
@@ -398,7 +456,7 @@ def sitemap():
     result = supabase.table("projects").select("slug").execute()
     projects = result.data
 
-    urls = [f"{SITE_URL}/", f"{SITE_URL}/about"]
+    urls = [f"{SITE_URL}/", f"{SITE_URL}/about", f"{SITE_URL}/services"]
     urls += [f"{SITE_URL}/projects/{p['slug']}" for p in projects]
 
     xml = ['<?xml version="1.0" encoding="UTF-8"?>',

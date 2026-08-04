@@ -2,13 +2,12 @@
   <a href="/" class="nav-logo">S<span>R</span></a>
   <div class="nav-links">
     <a href="{% if active_page == 'home' %}#projects{% else %}/#projects{% endif %}"{% if active_page == 'home' %} data-nav-link{% endif %}>Work</a>
+    <a href="/services"{% if active_page == 'services' %} class="active"{% endif %}>Services</a>
     <a href="/about"{% if active_page == 'about' %} class="active"{% endif %}>About</a>
-    {% if show_contact_btn is not defined or show_contact_btn %}
-    <button class="contact-btn" onclick="openContact()">Contact</button>
-    {% endif %}
     <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle color theme" title="Toggle theme">
       <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
       <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
     </button>
+    <a href="/contact" class="contact-btn{% if active_page == 'contact' %} active{% endif %}">Contact</a>
   </div>
 </nav>
