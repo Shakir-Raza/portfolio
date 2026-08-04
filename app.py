@@ -5,6 +5,8 @@ from groq import Groq
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
+from PIL import Image
+from io import BytesIO
 import os
 import re
 import hmac
@@ -38,6 +40,8 @@ groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+# Public site URL for sitemap/robots (no trailing slash). Falls back to Render domain.
+SITE_URL = (os.getenv("SITE_URL") or "https://shakirraza.onrender.com").rstrip("/")
 
 # Magic-byte check — verifies the file's actual content, not just the
 # filename extension or the browser-supplied content-type (both spoofable).
@@ -49,6 +53,43 @@ def is_allowed_image(b):
 def is_allowed_pdf(file_bytes):
     return file_bytes.startswith(b"%PDF-")
 
+def optimize_image(file_bytes, max_width=1600, quality=82):
+    """Resize and compress an image. Returns (optimized_bytes, content_type, ext).
+    Falls back to original bytes if processing fails.
+    """
+    try:
+        img = Image.open(BytesIO(file_bytes))
+        img_format = (img.format or "JPEG").upper()
+
+        # Convert palette / unusual modes so JPEG/WebP save works cleanly
+        if img_format in ("JPEG", "JPG") and img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+        elif img.mode == "P":
+            img = img.convert("RGBA")
+
+        # Resize only if wider than max_width (preserve aspect ratio)
+        if img.width > max_width:
+            ratio = max_width / img.width
+            new_size = (max_width, int(img.height * ratio))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+
+        buf = BytesIO()
+        if img_format in ("JPEG", "JPG"):
+            img.save(buf, format="JPEG", quality=quality, optimize=True)
+            return buf.getvalue(), "image/jpeg", "jpg"
+        elif img_format == "PNG":
+            img.save(buf, format="PNG", optimize=True)
+            return buf.getvalue(), "image/png", "png"
+        elif img_format == "WEBP":
+            img.save(buf, format="WEBP", quality=quality, method=6)
+            return buf.getvalue(), "image/webp", "webp"
+        else:
+            # GIF or unknown — keep original
+            return file_bytes, None, None
+    except Exception as e:
+        print("Image optimize error:", e)
+        return file_bytes, None, None
+
 SYSTEM_PROMPT = """
 You are Shakir Raza's personal AI assistant on his portfolio website.
 Answer questions about Shakir naturally and helpfully.
@@ -59,7 +100,7 @@ About Shakir:
 - Builds end-to-end ML pipelines and Flask/Supabase backends, not just notebooks
 - Highlight: a salary-prediction model at 0.112 RMSLE (Ridge regression, compared against XGBoost/LightGBM/GradientBoosting)
 
-Skills: Python, Flask, Scikit-learn, Pandas, NumPy, SQL, Supabase, HTML/CSS, Jinja2, Tkinter, Git, Pygame
+Skills: Python, Flask, Scikit-learn, XGBoost, LightGBM, Pandas, NumPy, SQL, Supabase, LLMs/Groq, Plotly, REST APIs, HTML/CSS, Git
 
 Contact:
 - Email: razashakir919@gmail.com
@@ -102,22 +143,62 @@ def project_detail(slug):
     project["views"] = views
     return render_template("project.html", project=project)
 
+# Friendly JSON response when chatbot rate limit is hit (controls API cost).
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({
+        "reply": "You're sending messages a bit fast — please wait a moment and try again."
+    }), 429
+
 # ── CHATBOT ROUTE ──────────────────────────────────────────
 @app.route("/chat", methods=["POST"])
 @limiter.limit("20 per minute")
 @csrf.exempt
 def chat():
     try:
-        data = request.get_json()
-        user_message = data.get("message", "")
-        history = data.get("history", [])
-        
-        result = supabase.table("projects").select("title, description, tags").execute()
-        projects_text = "\n".join(
-            [f"- {p['title']}: {p['description']}" for p in result.data]
-            ) or "No projects yet."
+        data = request.get_json() or {}
+        user_message = (data.get("message") or "").strip()
+        history = data.get("history") or []
 
-        dynamic_prompt = SYSTEM_PROMPT + f"\n\nCurrent Projects:\n{projects_text}"
+        # Cost / abuse guard: ignore empty or very long messages
+        if not user_message:
+            return jsonify({"reply": "Send a short question about Shakir's work or skills."})
+        if len(user_message) > 500:
+            return jsonify({"reply": "Please keep questions under 500 characters."})
+        # Cap history sent to the model (already sliced client-side; enforce server-side too)
+        history = history[-6:]
+
+        # Pull richer project context so answers feel specific
+        result = supabase.table("projects").select(
+            "title, description, tags, status, live_url, github_url, problem, solution, results"
+        ).execute()
+
+        project_blocks = []
+        for p in result.data or []:
+            tags = ", ".join(p.get("tags") or []) or "none"
+            status = p.get("status") or "live"
+            block = f"- {p['title']} [{status}]\n  Summary: {p.get('description') or 'N/A'}\n  Tags: {tags}"
+            if p.get("problem"):
+                block += f"\n  Problem: {p['problem']}"
+            if p.get("solution"):
+                block += f"\n  Solution: {p['solution']}"
+            if p.get("results"):
+                block += f"\n  Results: {p['results']}"
+            if p.get("live_url"):
+                block += f"\n  Live: {p['live_url']}"
+            if p.get("github_url"):
+                block += f"\n  GitHub: {p['github_url']}"
+            project_blocks.append(block)
+
+        projects_text = "\n\n".join(project_blocks) or "No projects yet."
+
+        dynamic_prompt = (
+            SYSTEM_PROMPT
+            + "\n\nCurrent Projects (use these details when answering):\n"
+            + projects_text
+            + "\n\nIf asked about a specific project, prefer the details above. "
+              "If a field is missing, say you don't have that detail rather than inventing it."
+        )
 
         messages = [{"role": "system", "content": dynamic_prompt}]
         for msg in history:
@@ -192,12 +273,17 @@ def add_project():
                 if not is_allowed_image(file_bytes):
                     print(f"Rejected upload '{image.filename}': not a recognized image format")
                     continue
-                file_ext = image.filename.rsplit(".", 1)[-1].lower()
+
+                # Resize + compress before upload
+                optimized, content_type, opt_ext = optimize_image(file_bytes)
+                file_ext = opt_ext or image.filename.rsplit(".", 1)[-1].lower()
+                content_type = content_type or image.content_type or "image/jpeg"
                 file_name = f"{slug}-{i}.{file_ext}"
+
                 supabase_admin.storage.from_("project-images").upload(
                     file_name,
-                    file_bytes,
-                    {"content-type": image.content_type, "upsert": "true"}
+                    optimized,
+                    {"content-type": content_type, "upsert": "true"}
                 )
                 supabase_url = os.getenv("SUPABASE_URL")
                 url = f"{supabase_url}/storage/v1/object/public/project-images/{file_name}"
@@ -304,17 +390,16 @@ def about():
 
 @app.route("/robots.txt")
 def robots():
-    body = "User-agent: *\nAllow: /\nSitemap: https://shakirraza.up.railway.app/sitemap.xml\n"
+    body = f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n"
     return app.response_class(body, mimetype="text/plain")
 
 @app.route("/sitemap.xml")
 def sitemap():
-    base = "https://shakirraza.up.railway.app"
     result = supabase.table("projects").select("slug").execute()
     projects = result.data
 
-    urls = [f"{base}/", f"{base}/about"]
-    urls += [f"{base}/projects/{p['slug']}" for p in projects]
+    urls = [f"{SITE_URL}/", f"{SITE_URL}/about"]
+    urls += [f"{SITE_URL}/projects/{p['slug']}" for p in projects]
 
     xml = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']

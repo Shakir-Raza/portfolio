@@ -30,9 +30,11 @@ Python, Flask, Jinja2, Supabase (PostgreSQL + Storage), Groq API, HTML, CSS, Ren
 
 - Admin panel for managing portfolio projects — add, delete, tag, and upload images —
   without redeploying
-- Project images stored and served via Supabase Storage
-- AI chatbot (Groq-hosted Llama 3.1) with custom prompt design and error handling, answering
-  visitor questions about my background in natural language
+- Project images resized & compressed on upload, then stored via Supabase Storage
+- AI chatbot (Groq-hosted Llama 3.1) with project-aware context, rate limiting, and
+  error handling
+- Case-study fields (problem, solution, architecture, results, lessons) per project
+- Featured project ranking for homepage hierarchy
 - Deployed to production on Render
 
 ## Screenshots
@@ -51,8 +53,17 @@ source venv/bin/activate      # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-You'll need your own Supabase and Groq API credentials set up locally to run this (not
-included here for security reasons).
+Create a `.env` file with your own credentials (never commit this file):
+
+```
+SECRET_KEY=...
+ADMIN_PASSWORD=...
+SUPABASE_URL=...
+SUPABASE_KEY=...
+SUPABASE_SERVICE_KEY=...
+GROQ_API_KEY=...
+SITE_URL=https://shakirraza.onrender.com
+```
 
 ## Usage
 
@@ -60,11 +71,18 @@ included here for security reasons).
 python app.py
 ```
 
-Visit `http://localhost:5000`. Admin routes require login (set up your own admin credentials
-in `.env` or your auth setup).
+Visit `http://localhost:5000`. Admin routes require login.
+
+## Tests
+
+```bash
+python -m pytest test_app.py -q
+```
+
+Covers slugify, image/PDF magic-byte validation, and image optimization.
 
 ## Future Improvements
 
-- Add automated tests for the admin panel's CRUD operations
-- Add image optimization/resizing on upload rather than storing originals as-is
-- Rate-limit the chatbot endpoint to control API costs
+- Expand tests to cover admin CRUD routes with mocked Supabase
+- Optional light/dark mode toggle
+- Simple view-count analytics inside the admin panel

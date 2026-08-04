@@ -30,7 +30,7 @@
   {% with messages = get_flashed_messages() %}
     {% if messages %}
       {% for msg in messages %}
-      <div class="flash flash-success">✓ {{ msg }}</div>
+      <div class="flash flash-success" role="status">✓ {{ msg }}</div>
       {% endfor %}
     {% endif %}
   {% endwith %}
@@ -63,9 +63,19 @@
           <input type="text" id="add-tags" name="tags" placeholder="Python, Flask, Supabase"/>
         </div>
         <div class="form-group">
+          <label for="add-category">Category</label>
+          <select id="add-category" name="category">
+            <option value="fullstack">Full Stack</option>
+            <option value="ml">ML/AI</option>
+            <option value="data">Data Science</option>
+            <option value="other" selected>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="add-images">Project Images (select multiple)</label>
           <input type="file" id="add-images" name="images" accept="image/*" multiple/>
-          <small style="color: var(--muted); font-size: 0.75rem; margin-top: 0.3rem; display: block;">First image will be used as thumbnail</small>
+          <small class="form-hint">First image becomes the thumbnail. Images are resized &amp; compressed on upload.</small>
+          <div id="image-preview" class="image-preview-grid" aria-live="polite"></div>
         </div>
         <button type="submit" class="btn btn-accent" style="width:100%; padding:0.8rem; margin-top:0.5rem;">
           Add Project →
@@ -80,16 +90,28 @@
       <div class="admin-project-list">
         {% for project in projects %}
         <div class="admin-project-item">
-          <div>
-            <h3>{{ project.title }}</h3>
-            <p>/projects/{{ project.slug }}</p>
+          <div class="admin-project-meta">
+            {% if project.image_url %}
+            <img src="{{ project.image_url }}" alt="" class="admin-thumb" loading="lazy"/>
+            {% else %}
+            <div class="admin-thumb admin-thumb-placeholder"><i class="fa-solid fa-image" aria-hidden="true"></i></div>
+            {% endif %}
+            <div>
+              <h3>
+                {{ project.title }}
+                {% if project.featured_rank %}<span class="admin-featured-tag">Featured #{{ project.featured_rank }}</span>{% endif %}
+                {% if project.status == 'coming_soon' %}<span class="admin-status-tag">In progress</span>{% endif %}
+              </h3>
+              <p>/projects/{{ project.slug }}{% if project.views %} · {{ project.views }} views{% endif %}</p>
+            </div>
           </div>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
+          <div class="admin-project-actions">
             <a href="/projects/{{ project.slug }}" target="_blank" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 1rem;">View</a>
             <a href="/admin/edit/{{ project.id }}" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 1rem;">Edit</a>
-            <form method="POST" action="/admin/delete/{{ project.id }}">
+            <form method="POST" action="/admin/delete/{{ project.id }}" class="delete-form"
+                  onsubmit="return confirm('Delete “{{ project.title }}”? This cannot be undone.');">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this project?')">Delete</button>
+              <button type="submit" class="btn btn-danger" style="font-size:0.8rem; padding:0.4rem 1rem;">Delete</button>
             </form>
           </div>
         </div>
@@ -104,17 +126,19 @@
     </div>
 
   </div>
-<!-- CV UPLOAD -->
+
+  <!-- CV UPLOAD -->
   <div class="admin-form-box" style="margin-top: 2rem;">
     <h2>Upload CV</h2>
     <form method="POST" action="/admin/upload-cv" enctype="multipart/form-data">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
-        <label for="cv">CV File (PDF)</label>
-        <input type="file" id="cv" name="cv" accept=".pdf"/>
+        <label for="cv">CV File (PDF only)</label>
+        <input type="file" id="cv" name="cv" accept=".pdf,application/pdf"/>
+        <small class="form-hint">Only valid PDF files are accepted.</small>
       </div>
       <button type="submit" class="btn btn-accent" style="width:100%; padding:0.8rem;">
-      Upload CV →
+        Upload CV →
       </button>
     </form>
   </div>
@@ -124,6 +148,29 @@
 <footer>
   Built with Flask + Supabase &mdash; © 2026
 </footer>
+
+<script>
+  // Live image previews before upload
+  const input = document.getElementById('add-images');
+  const preview = document.getElementById('image-preview');
+  if (input && preview) {
+    input.addEventListener('change', () => {
+      preview.innerHTML = '';
+      const files = Array.from(input.files || []);
+      files.forEach((file, i) => {
+        if (!file.type.startsWith('image/')) return;
+        const url = URL.createObjectURL(file);
+        const fig = document.createElement('div');
+        fig.className = 'image-preview-item';
+        fig.innerHTML = `
+          <img src="${url}" alt="Preview ${i + 1}"/>
+          ${i === 0 ? '<span class="preview-thumb-label">Thumbnail</span>' : ''}
+        `;
+        preview.appendChild(fig);
+      });
+    });
+  }
+</script>
 
 </body>
 </html>

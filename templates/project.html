@@ -10,19 +10,26 @@
   <meta property="og:title" content="{{ project.title }} — Shakir Raza">
   <meta property="og:description" content="{{ project.description }}">
   <meta property="og:image" content="{{ project.image_url or url_for('static', filename='og-image.png', _external=True) }}">
-  <meta property="og:url" content="https://shakirraza.up.railway.app/projects/{{ project.slug }}">
+  <meta property="og:url" content="{{ request.url_root.rstrip('/') }}/projects/{{ project.slug }}">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="{{ project.title }} — Shakir Raza">
   <meta name="twitter:description" content="{{ project.description }}">
   <meta name="twitter:image" content="{{ project.image_url or url_for('static', filename='og-image.png', _external=True) }}">
 
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-  <link rel="canonical" href="https://shakirraza.up.railway.app/projects/{{ project.slug }}">
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}/projects/{{ project.slug }}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -101,52 +108,58 @@
     {% endif %}
   </div>
 
-  {% if project.problem %}
-  <div class="detail-section reveal">
-    <h2>Problem</h2>
-    <p>{{ project.problem }}</p>
-  </div>
-  {% endif %}
+  {% if project.problem or project.solution or project.architecture or project.challenges or project.results or project.lessons_learned or project.future_improvements %}
+  <div class="case-study">
+    <p class="case-study-label">Case study</p>
 
-  {% if project.solution %}
-  <div class="detail-section reveal">
-    <h2>Solution</h2>
-    <p>{{ project.solution }}</p>
-  </div>
-  {% endif %}
+    {% if project.problem %}
+    <div class="detail-section reveal">
+      <h2><span class="case-num">01</span> Problem</h2>
+      <p>{{ project.problem }}</p>
+    </div>
+    {% endif %}
 
-  {% if project.architecture %}
-  <div class="detail-section reveal">
-    <h2>Architecture</h2>
-    <p>{{ project.architecture }}</p>
-  </div>
-  {% endif %}
+    {% if project.solution %}
+    <div class="detail-section reveal">
+      <h2><span class="case-num">02</span> Approach</h2>
+      <p>{{ project.solution }}</p>
+    </div>
+    {% endif %}
 
-  {% if project.challenges %}
-  <div class="detail-section reveal">
-    <h2>Challenges</h2>
-    <p>{{ project.challenges }}</p>
-  </div>
-  {% endif %}
+    {% if project.architecture %}
+    <div class="detail-section reveal">
+      <h2><span class="case-num">03</span> Architecture</h2>
+      <p>{{ project.architecture }}</p>
+    </div>
+    {% endif %}
 
-  {% if project.results %}
-  <div class="detail-section reveal">
-    <h2>Results</h2>
-    <p>{{ project.results }}</p>
-  </div>
-  {% endif %}
+    {% if project.challenges %}
+    <div class="detail-section reveal">
+      <h2><span class="case-num">04</span> Challenges</h2>
+      <p>{{ project.challenges }}</p>
+    </div>
+    {% endif %}
 
-  {% if project.lessons_learned %}
-  <div class="detail-section reveal">
-    <h2>Lessons Learned</h2>
-    <p>{{ project.lessons_learned }}</p>
-  </div>
-  {% endif %}
+    {% if project.results %}
+    <div class="detail-section reveal">
+      <h2><span class="case-num">05</span> Results</h2>
+      <p>{{ project.results }}</p>
+    </div>
+    {% endif %}
 
-  {% if project.future_improvements %}
-  <div class="detail-section reveal">
-    <h2>Future Improvements</h2>
-    <p>{{ project.future_improvements }}</p>
+    {% if project.lessons_learned %}
+    <div class="detail-section reveal">
+      <h2><span class="case-num">06</span> Lessons</h2>
+      <p>{{ project.lessons_learned }}</p>
+    </div>
+    {% endif %}
+
+    {% if project.future_improvements %}
+    <div class="detail-section reveal">
+      <h2><span class="case-num">07</span> Next steps</h2>
+      <p>{{ project.future_improvements }}</p>
+    </div>
+    {% endif %}
   </div>
   {% endif %}
 

@@ -6,5 +6,9 @@
     {% if show_contact_btn is not defined or show_contact_btn %}
     <button class="contact-btn" onclick="openContact()">Contact</button>
     {% endif %}
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle color theme" title="Toggle theme">
+      <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
+      <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
+    </button>
   </div>
 </nav>

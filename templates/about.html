@@ -4,65 +4,58 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>About — Shakir Raza</title>
-  <meta name="description" content="About Shakir Raza — AI/ML Engineer and Python backend developer based in Karachi, Pakistan. NAVTTC-certified in AI & Machine Learning.">
-
+  <meta name="description" content="About Shakir Raza — AI/ML Engineer and Python backend developer in Karachi. NAVTTC-certified, building end-to-end ML systems.">
   <meta property="og:type" content="profile">
   <meta property="og:title" content="About — Shakir Raza">
   <meta property="og:description" content="AI/ML Engineer and Python backend developer based in Karachi, Pakistan.">
   <meta property="og:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
-  <meta property="og:url" content="https://shakirraza.up.railway.app/about">
-
+  <meta property="og:url" content="{{ request.url_root.rstrip('/') }}/about">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="About — Shakir Raza">
   <meta name="twitter:image" content="{{ url_for('static', filename='og-image.png', _external=True) }}">
-
+  <script>
+    (function () {
+      var t = localStorage.getItem('theme');
+      if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-  <link rel="canonical" href="https://shakirraza.up.railway.app/about">
-
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}/about">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-
 <a href="#main" class="skip-link">Skip to content</a>
-
 {% set active_page = 'about' %}
 {% include '_nav.html' %}
-
 <main id="main">
 <div class="about-page">
 
   <div class="about-page-header reveal">
-    <a href="/" class="back-link">← Back</a>
-    <div class="hero-tag" style="margin: 0 auto var(--space-5);"><span class="pulse-dot"></span> Available for work</div>
-
-    <h1 class="hero-headline" style="text-align:center;">
-      <span class="line-solid">BUILDING</span>
-      <span class="line-ghost">INTELLIGENT SYSTEMS</span>
-    </h1>
-
-    <p style="color: var(--text-secondary); font-size: var(--text-body-lg); max-width: 60ch; margin: var(--space-5) auto 0;">
-      Final-year Computer Science student in Karachi turning machine learning pipelines and Flask backends into things that actually ship — not just notebooks and coursework.
+    <a href="/" class="back-link">← Back home</a>
+    <p class="hero-eyebrow" style="margin-bottom: var(--space-4);"><span class="dot" aria-hidden="true"></span> Available for work</p>
+    <h1 class="hero-headline" style="max-width: 16ch;">Building systems that <em>actually ship</em></h1>
+    <p class="hero-desc" style="margin-top: var(--space-4); max-width: 52ch;">
+      Final-year Computer Science student in Karachi. I care less about demos and more about pipelines, APIs, and products people can use.
     </p>
-
-    <p class="about-page-location" style="margin-top: var(--space-4);"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Karachi, Pakistan</p>
-
-    <div class="hero-stats" style="justify-content:center; margin-top: var(--space-7);">
+    <p class="about-page-location" style="margin-top: var(--space-4);">
+      <i class="fa-solid fa-location-dot" aria-hidden="true"></i> Karachi, Pakistan · Remote-friendly
+    </p>
+    <div class="hero-stats" style="margin-top: var(--space-7);">
       <div class="hero-stat">
-        <div class="hero-stat-value text-stat">Final Year</div>
+        <div class="hero-stat-value text-stat">Final year</div>
         <div class="hero-stat-label">Computer Science</div>
       </div>
       <div class="hero-stat">
         <div class="hero-stat-value text-stat">NAVTTC</div>
-        <div class="hero-stat-label">AI &amp; ML Certified</div>
+        <div class="hero-stat-label">AI &amp; ML certified</div>
       </div>
       <div class="hero-stat">
-        <div class="hero-stat-value">5</div>
-        <div class="hero-stat-label">Projects Shipped</div>
+        <div class="hero-stat-value">5+</div>
+        <div class="hero-stat-label">Projects shipped</div>
       </div>
     </div>
   </div>
@@ -70,45 +63,80 @@
   <div class="about-page-content">
 
     <div class="about-section reveal">
-      <h2><i class="fa-solid fa-hammer" style="color:var(--accent); margin-right:10px; font-size:0.85em;" aria-hidden="true"></i>What I build</h2>
-      <p>I'm a final-year Computer Science student who builds end-to-end machine learning pipelines and Python backends, not just notebooks. My Job Market Dashboard pulls live postings from the Adzuna API, cleans and stores them in Supabase, and trains a Ridge regression model to predict salaries — currently at 0.112 RMSLE. My House Prices project compares four models (Ridge, XGBoost, LightGBM, GradientBoosting) across 79 features and 1,460 samples with 5-fold cross-validation, landing at the same 0.112 RMSLE.</p>
-      <p>This portfolio itself is a full-stack Flask and Supabase application with an admin panel for managing projects and an LLM-powered chatbot (Groq, Llama 3.1) that answers questions about my work in natural language — not a static template.</p>
+      <h2><i class="fa-solid fa-bolt" aria-hidden="true"></i> What I focus on</h2>
+      <p>
+        Most of my work sits at the intersection of <strong>machine learning</strong> and <strong>backend engineering</strong>.
+        I don’t stop at a notebook — I design the data flow, train and compare models, then wire the result into a real Flask/Supabase service with storage, auth-aware admin tools, and a public UI.
+      </p>
+      <p>
+        Examples: a job-market analytics pipeline (live Adzuna data → cleaning → Supabase → salary model), house-price models compared across Ridge, XGBoost, LightGBM and Gradient Boosting, and this portfolio itself — a production app with an admin CMS and a Groq-powered assistant.
+      </p>
     </div>
 
     <div class="about-section reveal">
-      <h2><i class="fa-solid fa-diagram-project" style="color:var(--accent); margin-right:10px; font-size:0.85em;" aria-hidden="true"></i>How I work</h2>
-      <p>Data structures aren't just coursework to me — my Library Management System uses a Binary Search Tree for book lookups, a queue for the waiting list, and a set for the collection, because those were the right tools for the job, not because a syllabus asked for them. I read the problem first and reach for the structure or model that actually fits, then validate it with real metrics instead of assuming it worked.</p>
-      <p>I'm NAVTTC-certified in AI &amp; Machine Learning and currently completing Saylani's AI &amp; Data Science program, covering EDA, ML pipelines, and deep learning fundamentals with TensorFlow.</p>
+      <h2><i class="fa-solid fa-layer-group" aria-hidden="true"></i> How I work</h2>
+      <p>
+        I start from the problem, not the tool. Need fast lookups? Use the structure that fits — BST, queues, sets — because they’re right for the job, not because a lab brief asked for them.
+        For ML, I measure: cross-validation, honest baselines, and metrics that mean something (RMSLE, not vanity accuracy).
+      </p>
+      <p>
+        I’m NAVTTC-certified in AI &amp; Machine Learning and finishing Saylani’s AI &amp; Data Science program (EDA, classical ML, and deep learning fundamentals with TensorFlow). Day to day I live in Python, Git, and shipping small vertical slices end to end.
+      </p>
     </div>
 
     <div class="about-section reveal">
-      <h2><i class="fa-solid fa-compass" style="color:var(--accent); margin-right:10px; font-size:0.85em;" aria-hidden="true"></i>What's next</h2>
-      <p>I'm looking for an AI/ML Engineer or Python Backend Developer role where I can take pipelines like these from personal projects to production systems — and keep shipping things that are measured, not just demoed.</p>
+      <h2><i class="fa-solid fa-compass" aria-hidden="true"></i> What’s next</h2>
+      <p>
+        I’m looking for an <strong>AI/ML Engineer</strong> or <strong>Python Backend</strong> role — internship or junior — where I can move personal pipelines into production systems, learn from a strong team, and keep owning outcomes, not just tickets.
+      </p>
+      <p>
+        If you’re hiring or want to talk through a project, reach out. I reply fast.
+      </p>
     </div>
 
     <div class="about-skills reveal">
       <h2>Skills</h2>
-      <div class="skills-grid">
-        <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-python" aria-hidden="true"></i></span> Python</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-flask" aria-hidden="true"></i></span> Flask</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-brain" aria-hidden="true"></i></span> AI / ML</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span> Data Science</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-gears" aria-hidden="true"></i></span> Scikit-learn</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-table" aria-hidden="true"></i></span> Pandas</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-square-root-variable" aria-hidden="true"></i></span> NumPy</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-database" aria-hidden="true"></i></span> SQL</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span> Supabase</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-html5" aria-hidden="true"></i></span> HTML/CSS</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-file-code" aria-hidden="true"></i></span> Jinja2</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-desktop" aria-hidden="true"></i></span> Tkinter</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-brands fa-git-alt" aria-hidden="true"></i></span> Git</div>
-        <div class="skill-item"><span class="skill-icon"><i class="fa-solid fa-gamepad" aria-hidden="true"></i></span> Pygame</div>
+      <div class="skills-marquee" aria-label="Skills">
+        <div class="skills-track">
+          <span class="skill-pill"><i class="fa-brands fa-python" aria-hidden="true"></i> Python</span>
+          <span class="skill-pill"><i class="fa-solid fa-flask" aria-hidden="true"></i> Flask</span>
+          <span class="skill-pill"><i class="fa-solid fa-brain" aria-hidden="true"></i> AI / ML</span>
+          <span class="skill-pill"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> Data Science</span>
+          <span class="skill-pill"><i class="fa-solid fa-gears" aria-hidden="true"></i> Scikit-learn</span>
+          <span class="skill-pill"><i class="fa-solid fa-bolt" aria-hidden="true"></i> XGBoost</span>
+          <span class="skill-pill"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> LightGBM</span>
+          <span class="skill-pill"><i class="fa-solid fa-table" aria-hidden="true"></i> Pandas</span>
+          <span class="skill-pill"><i class="fa-solid fa-square-root-variable" aria-hidden="true"></i> NumPy</span>
+          <span class="skill-pill"><i class="fa-solid fa-database" aria-hidden="true"></i> SQL</span>
+          <span class="skill-pill"><i class="fa-solid fa-server" aria-hidden="true"></i> Supabase</span>
+          <span class="skill-pill"><i class="fa-solid fa-robot" aria-hidden="true"></i> LLMs / Groq</span>
+          <span class="skill-pill"><i class="fa-solid fa-chart-area" aria-hidden="true"></i> Plotly</span>
+          <span class="skill-pill"><i class="fa-solid fa-code" aria-hidden="true"></i> REST APIs</span>
+          <span class="skill-pill"><i class="fa-brands fa-html5" aria-hidden="true"></i> HTML/CSS</span>
+          <span class="skill-pill"><i class="fa-brands fa-git-alt" aria-hidden="true"></i> Git</span>
+          <span class="skill-pill"><i class="fa-brands fa-python" aria-hidden="true"></i> Python</span>
+          <span class="skill-pill"><i class="fa-solid fa-flask" aria-hidden="true"></i> Flask</span>
+          <span class="skill-pill"><i class="fa-solid fa-brain" aria-hidden="true"></i> AI / ML</span>
+          <span class="skill-pill"><i class="fa-solid fa-chart-column" aria-hidden="true"></i> Data Science</span>
+          <span class="skill-pill"><i class="fa-solid fa-gears" aria-hidden="true"></i> Scikit-learn</span>
+          <span class="skill-pill"><i class="fa-solid fa-bolt" aria-hidden="true"></i> XGBoost</span>
+          <span class="skill-pill"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> LightGBM</span>
+          <span class="skill-pill"><i class="fa-solid fa-table" aria-hidden="true"></i> Pandas</span>
+          <span class="skill-pill"><i class="fa-solid fa-square-root-variable" aria-hidden="true"></i> NumPy</span>
+          <span class="skill-pill"><i class="fa-solid fa-database" aria-hidden="true"></i> SQL</span>
+          <span class="skill-pill"><i class="fa-solid fa-server" aria-hidden="true"></i> Supabase</span>
+          <span class="skill-pill"><i class="fa-solid fa-robot" aria-hidden="true"></i> LLMs / Groq</span>
+          <span class="skill-pill"><i class="fa-solid fa-chart-area" aria-hidden="true"></i> Plotly</span>
+          <span class="skill-pill"><i class="fa-solid fa-code" aria-hidden="true"></i> REST APIs</span>
+          <span class="skill-pill"><i class="fa-brands fa-html5" aria-hidden="true"></i> HTML/CSS</span>
+          <span class="skill-pill"><i class="fa-brands fa-git-alt" aria-hidden="true"></i> Git</span>
+        </div>
       </div>
     </div>
 
     <div class="about-links-section reveal">
-      <a href="https://github.com/Shakir-Raza" target="_blank" class="btn btn-outline"><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</a>
-      <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" class="btn btn-outline"><i class="fa-brands fa-linkedin" aria-hidden="true"></i> LinkedIn</a>
+      <a href="https://github.com/Shakir-Raza" target="_blank" rel="noopener" class="btn btn-outline"><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</a>
+      <a href="https://www.linkedin.com/in/shakir-raza" target="_blank" rel="noopener" class="btn btn-outline"><i class="fa-brands fa-linkedin" aria-hidden="true"></i> LinkedIn</a>
       <a href="mailto:razashakir919@gmail.com" class="btn btn-outline"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Email</a>
       <a href="/static/cv.pdf" download class="btn btn-accent">Download CV</a>
     </div>
@@ -116,12 +144,8 @@
   </div>
 </div>
 </main>
-
 {% include '_footer.html' %}
-
 {% include '_contact_modal.html' %}
-
 {% include '_shared_scripts.html' %}
-
 </body>
 </html>
