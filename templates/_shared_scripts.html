@@ -66,6 +66,12 @@ function copyText(text, btn) {
 const revealEls = document.querySelectorAll('.reveal');
 function markInView(el) { el.classList.add('in-view'); }
 
+// The hero is above-the-fold and must never wait on a scroll event to
+// appear. Mark anything inside it in-view immediately, independent of
+// the IntersectionObserver logic below (which is fine for content
+// further down the page, like Skills/Projects).
+document.querySelectorAll('#hero, #hero .reveal, .hero, .hero .reveal').forEach(markInView);
+
 if ('IntersectionObserver' in window) {
   const io = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {

@@ -629,6 +629,16 @@ footer {
 .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
 .reveal.in-view { opacity: 1; transform: translateY(0); }
 
+/* The hero is the first thing visitors see and must never be gated behind
+   a scroll event -- if a .reveal class ever ends up on any hero element
+   (directly or via a wrapper), force it visible immediately regardless of
+   whether IntersectionObserver has fired yet. */
+#hero, #hero .reveal, .hero, .hero .reveal,
+.hero-content, .hero-content * {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* Admin */
 .admin-container { max-width: 1100px; margin: 0 auto; padding: var(--space-8); }
 .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-3); }
