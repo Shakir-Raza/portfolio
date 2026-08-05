@@ -469,7 +469,6 @@ def contact():
         body = f"From: {name} <{email}>\nSubject: {subject}\n\n{message}"
         print(f"[CONTACT]\n{body}")
 
-        # Append to a local log file (works on Render disk ephemerally + localhost)
         try:
             log_dir = os.path.join(os.path.dirname(__file__) or ".", "instance")
             os.makedirs(log_dir, exist_ok=True)
@@ -480,16 +479,21 @@ def contact():
             print("Contact log write error:", e)
 
         sent = False
-        notify_to = os.getenv("CONTACT_TO") or "razashakir919@gmail.com"
+        send_error = None
+        notify_to = (os.getenv("CONTACT_TO") or "razashakir919@gmail.com").strip()
 
-        # 1) Resend.com API (simple — set RESEND_API_KEY in .env)
-        resend_key = os.getenv("RESEND_API_KEY")
+        # Strip whitespace/quotes from env values (common Render paste issue)
+        def env(key, default=""):
+            v = os.getenv(key, default) or default
+            return v.strip().strip('"').strip("'")
+
+        resend_key = env("RESEND_API_KEY")
         if resend_key and not sent:
             try:
                 import urllib.request
                 import json as _json
                 payload = _json.dumps({
-                    "from": os.getenv("RESEND_FROM") or "Portfolio <onboarding@resend.dev>",
+                    "from": env("RESEND_FROM") or "Portfolio <onboarding@resend.dev>",
                     "to": [notify_to],
                     "reply_to": email,
                     "subject": f"[Portfolio] {subject}",
@@ -508,12 +512,13 @@ def contact():
                     if 200 <= resp.status < 300:
                         sent = True
             except Exception as e:
+                send_error = f"Resend: {e}"
                 print("Resend error:", e)
 
-        # 2) Classic SMTP (Gmail app password, etc.)
-        smtp_host = os.getenv("SMTP_HOST")
-        smtp_user = os.getenv("SMTP_USER")
-        smtp_pass = os.getenv("SMTP_PASS")
+        smtp_host = env("SMTP_HOST")
+        smtp_user = env("SMTP_USER")
+        smtp_pass = env("SMTP_PASS")
+        smtp_port = env("SMTP_PORT") or "587"
         if smtp_host and smtp_user and smtp_pass and not sent:
             try:
                 import smtplib
@@ -524,24 +529,31 @@ def contact():
                 msg["To"] = notify_to
                 msg["Reply-To"] = email
                 msg.set_content(body)
-                port = int(os.getenv("SMTP_PORT") or 587)
-                with smtplib.SMTP(smtp_host, port, timeout=20) as s:
+                with smtplib.SMTP(smtp_host, int(smtp_port), timeout=20) as s:
                     s.starttls()
                     s.login(smtp_user, smtp_pass)
                     s.send_message(msg)
                 sent = True
             except Exception as e:
+                send_error = f"SMTP: {e}"
                 print("SMTP error:", e)
 
         if sent:
             flash("Thanks — your message was sent. I will reply by email.", "success")
-        else:
-            # Form still "works" but you must configure email to receive inbox mail
+        elif not smtp_host and not resend_key:
             flash(
-                "Message saved on the server. Email delivery is not configured yet — "
-                "set RESEND_API_KEY or SMTP_* in .env (see README).",
-                "success",
+                "Message saved, but email is not configured on this server. "
+                "Add SMTP_HOST, SMTP_USER, SMTP_PASS (and CONTACT_TO) in Render Environment, then redeploy.",
+                "error",
             )
+        else:
+            flash(
+                "Message saved, but sending email failed. Check server logs for SMTP/Resend errors "
+                "(wrong app password, blocked login, etc.).",
+                "error",
+            )
+            if send_error:
+                print("Contact send_error detail:", send_error)
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
