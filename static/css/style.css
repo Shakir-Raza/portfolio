@@ -684,8 +684,9 @@ footer {
   .hero-headline { max-width: none; }
   .admin-grid { grid-template-columns: 1fr; }
   .admin-container { padding: var(--space-5) var(--space-4); }
-  .project-row { grid-template-columns: 2.5rem 1fr; }
-  .project-row-aside { display: none; }
+  .project-row { grid-template-columns: 2.5rem 1fr auto; }
+  .project-row-arrow { display: none; }
+  .project-row-thumb { width: 64px; height: 48px; }
 }
 @media (max-width: 640px) {
   nav { padding: var(--space-3) var(--space-4); }
@@ -693,8 +694,9 @@ footer {
   .nav-links a { font-size: 0.75rem; }
   .contact-btn { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
   .hero { padding-top: var(--space-6); }
-  .project-row { grid-template-columns: 1fr; gap: var(--space-2); }
+  .project-row { grid-template-columns: 1fr auto; column-gap: var(--space-3); row-gap: var(--space-2); align-items: start; }
   .project-row-num { display: none; }
+  .project-row-thumb { width: 56px; height: 42px; }
   footer { flex-direction: column; align-items: flex-start; }
   .chatbot-window { width: calc(100vw - 24px); right: -4px; }
 
