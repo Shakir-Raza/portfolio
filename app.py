@@ -506,6 +506,11 @@ def contact():
                     headers={
                         "Authorization": f"Bearer {resend_key}",
                         "Content-Type": "application/json",
+                        # Without an explicit User-Agent, urllib sends "Python-urllib/3.x",
+                        # which Cloudflare (sitting in front of api.resend.com) blocks as a
+                        # bot signature -- this is Cloudflare error code 1010, exactly the
+                        # 403 this route was hitting.
+                        "User-Agent": "Portfolio-Contact-Form/1.0 (+https://shakirraza.onrender.com)",
                     },
                     method="POST",
                 )
