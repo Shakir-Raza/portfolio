@@ -1,14 +1,28 @@
 <script>
 (function () {
+  // Safari Private Browsing, in-app browsers (LinkedIn/Instagram/WhatsApp),
+  // and strict tracking-prevention modes can make localStorage/sessionStorage
+  // throw on access. Without these guards, that throw used to stop this whole
+  // script — which meant the DOMContentLoaded handler below (and with it, the
+  // code that dismisses the full-screen intro overlay) never ran, leaving
+  // visitors stuck behind a frozen splash screen. Small helpers make every
+  // storage access safe to call.
+  function safeGet(store, key) {
+    try { return store.getItem(key); } catch (e) { return null; }
+  }
+  function safeSet(store, key, value) {
+    try { store.setItem(key, value); } catch (e) { /* ignore */ }
+  }
+
   const root = document.documentElement;
-  const stored = localStorage.getItem('theme');
+  const stored = safeGet(window.localStorage, 'theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const initial = stored || (prefersDark ? 'dark' : 'light');
   root.setAttribute('data-theme', initial);
 
   function setTheme(mode) {
     root.setAttribute('data-theme', mode);
-    localStorage.setItem('theme', mode);
+    safeSet(window.localStorage, 'theme', mode);
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -22,12 +36,12 @@
 
     const intro = document.getElementById('siteIntro');
     if (intro) {
-      if (sessionStorage.getItem('introSeen')) {
+      if (safeGet(window.sessionStorage, 'introSeen')) {
         intro.classList.add('is-done');
       } else {
         setTimeout(function () {
           intro.classList.add('is-done');
-          sessionStorage.setItem('introSeen', '1');
+          safeSet(window.sessionStorage, 'introSeen', '1');
         }, 2200);
       }
     }

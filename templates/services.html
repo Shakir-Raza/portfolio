@@ -10,7 +10,8 @@
   <meta property="og:url" content="{{ request.url_root.rstrip('/') }}/services">
   <script>
     (function () {
-      var t = localStorage.getItem('theme');
+      var t;
+      try { t = localStorage.getItem('theme'); } catch (e) { t = null; }
       if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', t);
     })();

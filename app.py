@@ -491,6 +491,7 @@ def contact():
         if resend_key and not sent:
             try:
                 import urllib.request
+                import urllib.error
                 import json as _json
                 payload = _json.dumps({
                     "from": env("RESEND_FROM") or "Portfolio <onboarding@resend.dev>",
@@ -511,6 +512,17 @@ def contact():
                 with urllib.request.urlopen(req, timeout=15) as resp:
                     if 200 <= resp.status < 300:
                         sent = True
+            except urllib.error.HTTPError as e:
+                # e's default string form ("HTTP Error 403: Forbidden") throws away
+                # the response body -- which is exactly where Resend puts the real
+                # reason (e.g. "You can only send testing emails to your own email
+                # address" or "domain is not verified"). Read it so logs are actionable.
+                try:
+                    detail = e.read().decode("utf-8", errors="replace")
+                except Exception:
+                    detail = "(could not read response body)"
+                send_error = f"Resend: HTTP {e.code} — {detail}"
+                print("Resend error:", send_error)
             except Exception as e:
                 send_error = f"Resend: {e}"
                 print("Resend error:", e)

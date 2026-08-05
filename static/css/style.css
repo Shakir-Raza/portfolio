@@ -103,6 +103,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--intro-bg);
   display: flex; align-items: center; justify-content: center;
   transition: opacity 0.85s var(--ease), visibility 0.85s, transform 0.85s var(--ease);
+  /* Safety net: if JS never runs (blocked script, slow connection, ad
+     blocker) this still forces the overlay out of the way after 5s so the
+     site never gets permanently stuck behind it. */
+  animation: force-dismiss-intro 0s 5s forwards;
+}
+@keyframes force-dismiss-intro {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 .site-intro.is-done {
   opacity: 0; visibility: hidden; pointer-events: none;
