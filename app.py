@@ -129,25 +129,36 @@ def slugify(text):
 
 @app.route("/")
 def index():
-    result = supabase.table("projects").select("*").order("created_at", desc=True).execute()
-    projects = result.data
-    # Sort by featured_rank when it's set (Phase 3 schema addition — see
-    # supabase-migration-case-study-fields.sql). Projects without a rank
-    # keep their original created_at-desc order, so this is a no-op until
-    # you've run the migration and started setting ranks in the admin panel.
-    projects.sort(key=lambda p: (p.get("featured_rank") is None, p.get("featured_rank") or 0))
+    try:
+        result = supabase.table("projects").select("*").order("created_at", desc=True).execute()
+        projects = result.data or []
+        # Sort by featured_rank when it's set (Phase 3 schema addition — see
+        # supabase-migration-case-study-fields.sql). Projects without a rank
+        # keep their original created_at-desc order, so this is a no-op until
+        # you've run the migration and started setting ranks in the admin panel.
+        projects.sort(key=lambda p: (p.get("featured_rank") is None, p.get("featured_rank") or 0))
+    except Exception as e:
+        print("Index load error:", e)
+        projects = []
     return render_template("index.html", projects=projects)
 
 @app.route("/projects/<slug>")
 def project_detail(slug):
-    result = supabase.table("projects").select("*").eq("slug", slug).execute()
+    try:
+        result = supabase.table("projects").select("*").eq("slug", slug).execute()
+    except Exception as e:
+        print("Project detail load error:", e)
+        return "Project not found", 404
     if not result.data:
         return "Project not found", 404
     project = result.data[0]
-    # increment view count
+    # increment view count (best-effort — a failure here shouldn't stop the page loading)
     views = (project.get("views") or 0) + 1
-    supabase.table("projects").update({"views": views}).eq("slug", slug).execute()
-    project["views"] = views
+    try:
+        supabase.table("projects").update({"views": views}).eq("slug", slug).execute()
+        project["views"] = views
+    except Exception as e:
+        print("View count update error:", e)
     return render_template("project.html", project=project)
 
 # Friendly JSON response when chatbot rate limit is hit (controls API cost).
@@ -233,8 +244,13 @@ def chat():
 def admin():
     if not session.get("admin"):
         return redirect(url_for("login"))
-    result = supabase.table("projects").select("*").order("created_at", desc=True).execute()
-    projects = result.data
+    try:
+        result = supabase.table("projects").select("*").order("created_at", desc=True).execute()
+        projects = result.data or []
+    except Exception as e:
+        print("Admin load error:", e)
+        flash(f"Couldn't load projects: {e}", "error")
+        projects = []
     return render_template("admin.html", projects=projects)
 
 @app.route("/admin/login", methods=["GET", "POST"])
@@ -270,7 +286,12 @@ def add_project():
     category = request.form.get("category", "other")
     slug = slugify(title)
     image_url = ""
-    image_urls = [f"{SITE_URL}/", f"{SITE_URL}/about", f"{SITE_URL}/services", f"{SITE_URL}/contact"]
+    # BUGFIX: this used to be pre-seeded with the site's own page URLs
+    # (SITE_URL/, /about, /services, /contact) instead of starting empty --
+    # copy-paste leftover from the sitemap() function below. That meant every
+    # new project's "images" gallery contained those 4 non-image page links,
+    # which the slideshow on project.html tried to render as <img> tags.
+    image_urls = []
 
     images = request.files.getlist("images")
     for i, image in enumerate(images):
@@ -300,20 +321,24 @@ def add_project():
             except Exception as e:
                 print("Image upload error:", e)
 
-    supabase.table("projects").insert({
-        "title": title,
-        "description": description,
-        "live_url": live_url,
-        "github_url": github_url,
-        "tags": tags,
-        "slug": slug,
-        "image_url": image_url,
-        "images": image_urls,
-        "category": category,
-        "views": 0
-    }).execute()
+    try:
+        supabase.table("projects").insert({
+            "title": title,
+            "description": description,
+            "live_url": live_url,
+            "github_url": github_url,
+            "tags": tags,
+            "slug": slug,
+            "image_url": image_url,
+            "images": image_urls,
+            "category": category,
+            "views": 0
+        }).execute()
+        flash("Project added successfully!")
+    except Exception as e:
+        print("Add project error:", e)
+        flash(f"Couldn't add the project: {e}", "error")
 
-    flash("Project added successfully!")
     return redirect(url_for("admin"))
 
 @app.route("/admin/edit/<id>", methods=["GET", "POST"])
@@ -340,9 +365,14 @@ def edit_project(id):
         featured_rank = int(featured_rank_raw) if featured_rank_raw.isdigit() else None
 
         # Load current project for existing images
-        current = supabase.table("projects").select("*").eq("id", id).execute()
+        try:
+            current = supabase.table("projects").select("*").eq("id", id).execute()
+        except Exception as e:
+            print("Edit project fetch error:", e)
+            flash(f"Couldn't load the project to edit: {e}", "error")
+            return redirect(url_for("admin"))
         if not current.data:
-            flash("Project not found.")
+            flash("Project not found.", "error")
             return redirect(url_for("admin"))
         project = current.data[0]
 
@@ -394,13 +424,24 @@ def edit_project(id):
         all_images = kept + new_urls
         image_url = all_images[0] if all_images else ""
 
-        supabase.table("projects").update({
+        # Fields that have existed since the original schema.
+        base_fields = {
             "title": title,
             "description": description,
             "live_url": live_url,
             "github_url": github_url,
             "tags": tags,
             "category": category,
+            "images": all_images,
+            "image_url": image_url,
+        }
+        # Case-study fields added later — these require
+        # supabase-migration-case-study-fields.sql to have been run against
+        # your Supabase table. If it hasn't, Postgres/PostgREST rejects the
+        # whole update with an "unknown column" error, which used to bubble
+        # up as an unhandled 500 ("external error") and silently discard
+        # every edit, including the base fields above.
+        case_study_fields = {
             "status": status,
             "problem": problem,
             "solution": solution,
@@ -410,14 +451,40 @@ def edit_project(id):
             "lessons_learned": lessons_learned,
             "future_improvements": future_improvements,
             "featured_rank": featured_rank,
-            "images": all_images,
-            "image_url": image_url,
-        }).eq("id", id).execute()
+        }
 
-        flash("Project updated!")
+        try:
+            supabase.table("projects").update({**base_fields, **case_study_fields}).eq("id", id).execute()
+            flash("Project updated!")
+        except Exception as e:
+            print("Edit project update error (full):", e)
+            # Fall back to saving just the base fields so the edit isn't
+            # lost entirely, and tell the user exactly why the rest didn't save.
+            try:
+                supabase.table("projects").update(base_fields).eq("id", id).execute()
+                flash(
+                    "Saved title/description/links/images, but the case-study fields "
+                    "(Status, Problem, Solution, Architecture, Challenges, Results, "
+                    "Lessons, Next steps, Featured order) couldn't be saved. Run "
+                    "supabase-migration-case-study-fields.sql against your Supabase "
+                    "project, then try again.",
+                    "error",
+                )
+            except Exception as e2:
+                print("Edit project update error (base fields):", e2)
+                flash(f"Couldn't save changes: {e2}", "error")
+
         return redirect(url_for("admin"))
 
-    result = supabase.table("projects").select("*").eq("id", id).execute()
+    try:
+        result = supabase.table("projects").select("*").eq("id", id).execute()
+    except Exception as e:
+        print("Edit project load error:", e)
+        flash(f"Couldn't load the project: {e}", "error")
+        return redirect(url_for("admin"))
+    if not result.data:
+        flash("Project not found.", "error")
+        return redirect(url_for("admin"))
     project = result.data[0]
     return render_template("edit_project.html", project=project)
 
@@ -426,8 +493,12 @@ def edit_project(id):
 def delete_project(id):
     if not session.get("admin"):
         return redirect(url_for("login"))
-    supabase.table("projects").delete().eq("id", id).execute()
-    flash("Project deleted!")
+    try:
+        supabase.table("projects").delete().eq("id", id).execute()
+        flash("Project deleted!")
+    except Exception as e:
+        print("Delete project error:", e)
+        flash(f"Couldn't delete the project: {e}", "error")
     return redirect(url_for("admin"))
 
 @app.route("/admin/upload-cv", methods=["POST"])
@@ -438,11 +509,20 @@ def upload_cv():
     if cv and cv.filename:
         file_bytes = cv.read()
         if not is_allowed_pdf(file_bytes):
-            flash("That file doesn't look like a valid PDF.")
+            flash("That file doesn't look like a valid PDF.", "error")
             return redirect(url_for("admin"))
-        with open(os.path.join("static", "cv.pdf"), "wb") as f:
-            f.write(file_bytes)
-        flash("CV uploaded successfully!")
+        try:
+            # Write next to this file (app.py), not relative to the process's
+            # current working directory — those aren't always the same,
+            # especially under gunicorn, and a relative "static/" path would
+            # silently write to (or fail against) the wrong folder.
+            static_dir = os.path.join(os.path.dirname(__file__) or ".", "static")
+            with open(os.path.join(static_dir, "cv.pdf"), "wb") as f:
+                f.write(file_bytes)
+            flash("CV uploaded successfully!")
+        except Exception as e:
+            print("CV upload error:", e)
+            flash(f"Couldn't save the CV file: {e}", "error")
     return redirect(url_for("admin"))
 
 @app.route("/services")
@@ -587,8 +667,12 @@ def robots():
 
 @app.route("/sitemap.xml")
 def sitemap():
-    result = supabase.table("projects").select("slug").execute()
-    projects = result.data
+    try:
+        result = supabase.table("projects").select("slug").execute()
+        projects = result.data or []
+    except Exception as e:
+        print("Sitemap load error:", e)
+        projects = []
 
     urls = [f"{SITE_URL}/", f"{SITE_URL}/about", f"{SITE_URL}/services"]
     urls += [f"{SITE_URL}/projects/{p['slug']}" for p in projects]
