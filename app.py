@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from groq import Groq
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
 from PIL import Image
 from io import BytesIO
@@ -14,6 +15,16 @@ import hmac
 load_dotenv()
 
 app = Flask(__name__)
+
+# BUGFIX: without this, get_remote_address() (used by the rate limiter below)
+# sees the IP of Render's/Cloudflare's proxy, not the real visitor — meaning
+# EVERY visitor was being counted into one shared "200 per day / 50 per hour"
+# bucket keyed to the proxy's IP. The homepage, hit by every visitor plus
+# uptime-monitor pings, exhausted that shared budget first, which is why only
+# "/" was returning 429s while lower-traffic pages weren't (yet). x_for=1
+# trusts one hop of X-Forwarded-For, which matches Render's setup; raise it
+# if you put another proxy in front later.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 app.secret_key = os.getenv("SECRET_KEY")
 
 # Reject any upload over 25MB before it's even fully read into memory —
@@ -166,12 +177,17 @@ def project_detail(slug):
         print("View count update error:", e)
     return render_template("project.html", project=project)
 
-# Friendly JSON response when chatbot rate limit is hit (controls API cost).
+# Friendly response when a rate limit is hit. Was previously returning the
+# CHATBOT'S message ("You're sending messages...") for every 429, on every
+# route — that's what showed up as raw JSON on the homepage. Now it only
+# sends that message for the chat endpoint itself.
 @app.errorhandler(429)
 def ratelimit_handler(e):
-    return jsonify({
-        "reply": "You're sending messages a bit fast — please wait a moment and try again."
-    }), 429
+    if request.path == "/chat":
+        return jsonify({
+            "reply": "You're sending messages a bit fast — please wait a moment and try again."
+        }), 429
+    return "Too many requests — please wait a moment and try again.", 429
 
 # Friendly response when an upload exceeds MAX_CONTENT_LENGTH. Without this,
 # Flask/Werkzeug returns a bare "413 Request Entity Too Large" page — this is
