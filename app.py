@@ -16,9 +16,14 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
-# Reject any upload over 10MB before it's even fully read into memory —
+# Reject any upload over 25MB before it's even fully read into memory —
 # protects against someone POSTing a huge file to exhaust server resources.
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+# Raised from 10MB: that limit applies to the WHOLE multipart request, not
+# per file, so selecting several screenshot-sized PNGs at once (e.g. dashboard
+# / chart images, which run larger than typical photos) could exceed it even
+# though each individual file was reasonable — and with no 413 handler (added
+# below), that failure surfaced as a raw, unfriendly error page.
+app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
 
 # CSRF protection on every state-changing (POST/PUT/PATCH/DELETE) route.
 # Forms need a hidden {{ csrf_token() }} field — already added to
@@ -168,6 +173,24 @@ def ratelimit_handler(e):
         "reply": "You're sending messages a bit fast — please wait a moment and try again."
     }), 429
 
+# Friendly response when an upload exceeds MAX_CONTENT_LENGTH. Without this,
+# Flask/Werkzeug returns a bare "413 Request Entity Too Large" page — this is
+# what was showing up as "an error" when adding several images at once
+# (e.g. dashboard/chart screenshots, which run bigger than typical photos)
+# in the admin add/edit forms. JSON requests (like /chat) get a JSON reply;
+# normal form posts (image uploads) get a flash message back on the referring
+# page instead of a blank error page.
+@app.errorhandler(413)
+def too_large_handler(e):
+    if request.path == "/chat":
+        return jsonify({"reply": "That message was too large."}), 413
+    flash(
+        "That upload was too large (max 25MB total per save). Try adding "
+        "fewer images at a time, or use smaller image files.",
+        "error",
+    )
+    return redirect(request.referrer or url_for("admin"))
+
 # ── CHATBOT ROUTE ──────────────────────────────────────────
 @app.route("/chat", methods=["POST"])
 @limiter.limit("20 per minute")
@@ -294,12 +317,14 @@ def add_project():
     image_urls = []
 
     images = request.files.getlist("images")
+    failed_uploads = []
     for i, image in enumerate(images):
         if image and image.filename:
             try:
                 file_bytes = image.read()
                 if not is_allowed_image(file_bytes):
                     print(f"Rejected upload '{image.filename}': not a recognized image format")
+                    failed_uploads.append(f"{image.filename} (not a recognized image format)")
                     continue
 
                 # Resize + compress before upload
@@ -320,6 +345,13 @@ def add_project():
                     image_url = url
             except Exception as e:
                 print("Image upload error:", e)
+                failed_uploads.append(f"{image.filename} ({e})")
+
+    if failed_uploads:
+        flash(
+            "Some images couldn't be uploaded and were skipped: " + "; ".join(failed_uploads),
+            "error",
+        )
 
     try:
         supabase.table("projects").insert({
@@ -399,12 +431,14 @@ def edit_project(id):
         new_urls = []
         images = request.files.getlist("images")
         start_i = len(kept)
+        failed_uploads = []
         for i, image in enumerate(images):
             if image and image.filename:
                 try:
                     file_bytes = image.read()
                     if not is_allowed_image(file_bytes):
                         print(f"Rejected upload '{image.filename}': not a recognized image format")
+                        failed_uploads.append(f"{image.filename} (not a recognized image format)")
                         continue
                     optimized, content_type, opt_ext = optimize_image(file_bytes)
                     file_ext = opt_ext or image.filename.rsplit(".", 1)[-1].lower()
@@ -420,6 +454,13 @@ def edit_project(id):
                     new_urls.append(url)
                 except Exception as e:
                     print("Image upload error:", e)
+                    failed_uploads.append(f"{image.filename} ({e})")
+
+        if failed_uploads:
+            flash(
+                "Some images couldn't be uploaded and were skipped: " + "; ".join(failed_uploads),
+                "error",
+            )
 
         all_images = kept + new_urls
         image_url = all_images[0] if all_images else ""

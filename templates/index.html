@@ -139,7 +139,7 @@
       </div>
       <div class="project-row-aside">
         {% if project.image_url and project.status != 'coming_soon' %}
-        <img src="{{ project.image_url }}" alt="" class="project-row-thumb" loading="lazy"/>
+        <img src="{{ project.image_url }}" alt="{{ project.title }} screenshot" class="project-row-thumb" loading="lazy"/>
         {% else %}
         <div class="project-row-thumb placeholder"><i class="fa-solid fa-arrow-up-right" aria-hidden="true"></i></div>
         {% endif %}

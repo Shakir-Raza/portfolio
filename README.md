@@ -63,6 +63,17 @@ SUPABASE_KEY=...
 SUPABASE_SERVICE_KEY=...
 GROQ_API_KEY=...
 SITE_URL=https://shakirraza.onrender.com
+
+# Contact form (optional — the form still saves the message locally if
+# neither of these is set, but won't be able to email you). Use one or the
+# other; Resend is tried first.
+RESEND_API_KEY=...
+RESEND_FROM=...
+CONTACT_TO=...
+SMTP_HOST=...
+SMTP_USER=...
+SMTP_PASS=...
+SMTP_PORT=587
 ```
 
 ## Usage
@@ -73,16 +84,20 @@ python app.py
 
 Visit `http://localhost:5000`. Admin routes require login.
 
-## Tests
+## Known Limitations
 
-```bash
-python -m pytest test_app.py -q
-```
-
-Covers slugify, image/PDF magic-byte validation, and image optimization.
+- No automated test suite yet — everything is manually tested against a dev
+  Supabase project before deploying. Adding pytest coverage for `slugify`,
+  the image/PDF magic-byte checks, and the admin CRUD routes (with a mocked
+  Supabase client) is the next infrastructure piece I want to add.
+- The chatbot's static bio/skills text lives in `SYSTEM_PROMPT` in `app.py`
+  rather than in Supabase, so unlike project content, updating it currently
+  requires a redeploy.
 
 ## Future Improvements
 
-- Expand tests to cover admin CRUD routes with mocked Supabase
-- Optional light/dark mode toggle
+- Add the pytest suite described above
+- Move the chatbot's static bio content into Supabase alongside project data
 - Simple view-count analytics inside the admin panel
+- Per-project Open Graph images (currently one static `og-image.png` for
+  every shared link)
