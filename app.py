@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, send_from_directory
 from supabase import create_client
 from dotenv import load_dotenv
 from groq import Groq
@@ -143,20 +143,94 @@ def slugify(text):
 
 # ── PUBLIC ROUTES ──────────────────────────────────────────
 
+REACT_DIST = os.path.join(os.path.dirname(__file__) or ".", "react_dist")
+
+
+@app.route("/assets/<path:filename>")
+def react_assets(filename):
+    """Serves the built React UI's JS/CSS/image bundle. Vite builds
+    reference absolute "/assets/..." paths, so this mirrors that exactly —
+    no vite.config changes needed."""
+    return send_from_directory(os.path.join(REACT_DIST, "assets"), filename)
+
+
 @app.route("/")
 def index():
+    # New React UI (zip2) is now the public homepage — it's a full one-page
+    # site (hero/about/services/projects/capabilities/experience/contact all
+    # in one scroll with anchor links), talking to /api/projects, /chat, and
+    # /api/contact for live data instead of hardcoded content.
+    #
+    # Falls back to the original Jinja homepage if react_dist/index.html
+    # hasn't been built yet (e.g. local dev before `npm run build`), so this
+    # never hard-breaks the site.
+    react_index = os.path.join(REACT_DIST, "index.html")
+    if os.path.exists(react_index):
+        return send_from_directory(REACT_DIST, "index.html")
+
     try:
         result = supabase.table("projects").select("*").order("created_at", desc=True).execute()
         projects = result.data or []
-        # Sort by featured_rank when it's set (Phase 3 schema addition — see
-        # supabase-migration-case-study-fields.sql). Projects without a rank
-        # keep their original created_at-desc order, so this is a no-op until
-        # you've run the migration and started setting ranks in the admin panel.
         projects.sort(key=lambda p: (p.get("featured_rank") is None, p.get("featured_rank") or 0))
     except Exception as e:
         print("Index load error:", e)
         projects = []
     return render_template("index.html", projects=projects)
+
+
+def _shape_project_for_api(p, index):
+    """Maps a raw Supabase `projects` row onto the shape the React UI's
+    ProjectItem interface expects (src/types.ts in the new frontend repo).
+    Kept in one place so the admin panel (source of truth) and the public
+    site never drift out of sync — the UI never hardcodes project content."""
+    architecture_text = p.get("architecture") or ""
+    return {
+        "id": p.get("slug"),
+        "number": str(index + 1).zfill(2),
+        "title": p.get("title"),
+        # DB has one `category` field; the UI wants both a short subtitle and
+        # a category label, so both reuse it rather than inventing content.
+        "subtitle": p.get("category") or "",
+        "category": p.get("category") or "",
+        "description": p.get("description") or "",
+        "longDescription": p.get("solution") or p.get("description") or "",
+        "architectureDetails": [line.strip() for line in architecture_text.split("\n") if line.strip()],
+        "metrics": [],  # no structured metrics column yet in Supabase
+        "technologies": p.get("tags") or [],
+        "image": p.get("image_url"),
+        "screenshots": p.get("images") or [],
+        "demoUrl": p.get("live_url"),
+        "githubUrl": p.get("github_url"),
+        "featured": p.get("featured_rank") is not None,
+        "inProgress": p.get("status") == "coming_soon",
+        "caseStudy": {
+            "problem": p.get("problem"),
+            "approach": p.get("solution"),
+            "architecture": p.get("architecture"),
+            "challenges": p.get("challenges"),
+            "results": p.get("results"),
+            "lessons": p.get("lessons_learned"),
+            "nextSteps": p.get("future_improvements"),
+        },
+    }
+
+
+@app.route("/api/projects")
+def api_projects():
+    """Public read-only JSON feed of projects, for the React frontend.
+    Same data, same admin panel as the source of truth — nothing here is
+    hardcoded, so editing a project in /admin updates the live site with
+    no frontend redeploy needed."""
+    try:
+        result = supabase.table("projects").select("*").order("created_at", desc=True).execute()
+        projects = result.data or []
+        projects.sort(key=lambda p: (p.get("featured_rank") is None, p.get("featured_rank") or 0))
+    except Exception as e:
+        print("API projects load error:", e)
+        projects = []
+    shaped = [_shape_project_for_api(p, i) for i, p in enumerate(projects)]
+    return jsonify(shaped)
+
 
 @app.route("/projects/<slug>")
 def project_detail(slug):
@@ -586,6 +660,94 @@ def upload_cv():
 def services():
     return render_template("services.html")
 
+def send_contact_email(name, email, subject, message):
+    """Shared send logic for both the old Jinja contact form and the new
+    React UI's JSON API — extracted so the two never drift out of sync.
+    Returns (sent: bool, send_error: str|None, configured: bool)."""
+    body = f"From: {name} <{email}>\nSubject: {subject}\n\n{message}"
+    print(f"[CONTACT]\n{body}")
+
+    try:
+        log_dir = os.path.join(os.path.dirname(__file__) or ".", "instance")
+        os.makedirs(log_dir, exist_ok=True)
+        with open(os.path.join(log_dir, "contact_messages.log"), "a", encoding="utf-8") as f:
+            from datetime import datetime
+            f.write(f"\n--- {datetime.utcnow().isoformat()}Z ---\n{body}\n")
+    except Exception as e:
+        print("Contact log write error:", e)
+
+    sent = False
+    send_error = None
+    notify_to = (os.getenv("CONTACT_TO") or "razashakir919@gmail.com").strip()
+
+    def env(key, default=""):
+        v = os.getenv(key, default) or default
+        return v.strip().strip('"').strip("'")
+
+    resend_key = env("RESEND_API_KEY")
+    if resend_key and not sent:
+        try:
+            import urllib.request
+            import urllib.error
+            import json as _json
+            payload = _json.dumps({
+                "from": env("RESEND_FROM") or "Portfolio <onboarding@resend.dev>",
+                "to": [notify_to],
+                "reply_to": email,
+                "subject": f"[Portfolio] {subject}",
+                "text": body,
+            }).encode()
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=payload,
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "Portfolio-Contact-Form/1.0 (+https://shakirraza.onrender.com)",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                if 200 <= resp.status < 300:
+                    sent = True
+        except urllib.error.HTTPError as e:
+            try:
+                detail = e.read().decode("utf-8", errors="replace")
+            except Exception:
+                detail = "(could not read response body)"
+            send_error = f"Resend: HTTP {e.code} — {detail}"
+            print("Resend error:", send_error)
+        except Exception as e:
+            send_error = f"Resend: {e}"
+            print("Resend error:", e)
+
+    smtp_host = env("SMTP_HOST")
+    smtp_user = env("SMTP_USER")
+    smtp_pass = env("SMTP_PASS")
+    smtp_port = env("SMTP_PORT") or "587"
+    if smtp_host and smtp_user and smtp_pass and not sent:
+        try:
+            import smtplib
+            from email.message import EmailMessage
+            msg = EmailMessage()
+            msg["Subject"] = f"[Portfolio] {subject}"
+            msg["From"] = smtp_user
+            msg["To"] = notify_to
+            msg["Reply-To"] = email
+            msg.set_content(body)
+            with smtplib.SMTP(smtp_host, int(smtp_port), timeout=20) as s:
+                s.starttls()
+                s.login(smtp_user, smtp_pass)
+                s.send_message(msg)
+            sent = True
+        except Exception as e:
+            send_error = f"SMTP: {e}"
+            print("SMTP error:", e)
+
+    configured = bool(smtp_host or resend_key)
+    return sent, send_error, configured
+
+
 @app.route("/contact", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def contact():
@@ -603,98 +765,11 @@ def contact():
             flash("Message is too long.", "error")
             return render_template("contact.html"), 400
 
-        body = f"From: {name} <{email}>\nSubject: {subject}\n\n{message}"
-        print(f"[CONTACT]\n{body}")
-
-        try:
-            log_dir = os.path.join(os.path.dirname(__file__) or ".", "instance")
-            os.makedirs(log_dir, exist_ok=True)
-            with open(os.path.join(log_dir, "contact_messages.log"), "a", encoding="utf-8") as f:
-                from datetime import datetime
-                f.write(f"\n--- {datetime.utcnow().isoformat()}Z ---\n{body}\n")
-        except Exception as e:
-            print("Contact log write error:", e)
-
-        sent = False
-        send_error = None
-        notify_to = (os.getenv("CONTACT_TO") or "razashakir919@gmail.com").strip()
-
-        # Strip whitespace/quotes from env values (common Render paste issue)
-        def env(key, default=""):
-            v = os.getenv(key, default) or default
-            return v.strip().strip('"').strip("'")
-
-        resend_key = env("RESEND_API_KEY")
-        if resend_key and not sent:
-            try:
-                import urllib.request
-                import urllib.error
-                import json as _json
-                payload = _json.dumps({
-                    "from": env("RESEND_FROM") or "Portfolio <onboarding@resend.dev>",
-                    "to": [notify_to],
-                    "reply_to": email,
-                    "subject": f"[Portfolio] {subject}",
-                    "text": body,
-                }).encode()
-                req = urllib.request.Request(
-                    "https://api.resend.com/emails",
-                    data=payload,
-                    headers={
-                        "Authorization": f"Bearer {resend_key}",
-                        "Content-Type": "application/json",
-                        # Without an explicit User-Agent, urllib sends "Python-urllib/3.x",
-                        # which Cloudflare (sitting in front of api.resend.com) blocks as a
-                        # bot signature -- this is Cloudflare error code 1010, exactly the
-                        # 403 this route was hitting.
-                        "User-Agent": "Portfolio-Contact-Form/1.0 (+https://shakirraza.onrender.com)",
-                    },
-                    method="POST",
-                )
-                with urllib.request.urlopen(req, timeout=15) as resp:
-                    if 200 <= resp.status < 300:
-                        sent = True
-            except urllib.error.HTTPError as e:
-                # e's default string form ("HTTP Error 403: Forbidden") throws away
-                # the response body -- which is exactly where Resend puts the real
-                # reason (e.g. "You can only send testing emails to your own email
-                # address" or "domain is not verified"). Read it so logs are actionable.
-                try:
-                    detail = e.read().decode("utf-8", errors="replace")
-                except Exception:
-                    detail = "(could not read response body)"
-                send_error = f"Resend: HTTP {e.code} — {detail}"
-                print("Resend error:", send_error)
-            except Exception as e:
-                send_error = f"Resend: {e}"
-                print("Resend error:", e)
-
-        smtp_host = env("SMTP_HOST")
-        smtp_user = env("SMTP_USER")
-        smtp_pass = env("SMTP_PASS")
-        smtp_port = env("SMTP_PORT") or "587"
-        if smtp_host and smtp_user and smtp_pass and not sent:
-            try:
-                import smtplib
-                from email.message import EmailMessage
-                msg = EmailMessage()
-                msg["Subject"] = f"[Portfolio] {subject}"
-                msg["From"] = smtp_user
-                msg["To"] = notify_to
-                msg["Reply-To"] = email
-                msg.set_content(body)
-                with smtplib.SMTP(smtp_host, int(smtp_port), timeout=20) as s:
-                    s.starttls()
-                    s.login(smtp_user, smtp_pass)
-                    s.send_message(msg)
-                sent = True
-            except Exception as e:
-                send_error = f"SMTP: {e}"
-                print("SMTP error:", e)
+        sent, send_error, configured = send_contact_email(name, email, subject, message)
 
         if sent:
             flash("Thanks — your message was sent. I will reply by email.", "success")
-        elif not smtp_host and not resend_key:
+        elif not configured:
             flash(
                 "Message saved, but email is not configured on this server. "
                 "Add SMTP_HOST, SMTP_USER, SMTP_PASS (and CONTACT_TO) in Render Environment, then redeploy.",
@@ -711,6 +786,39 @@ def contact():
         return redirect(url_for("contact"))
 
     return render_template("contact.html")
+
+
+@app.route("/api/contact", methods=["POST"])
+@limiter.limit("5 per minute")
+@csrf.exempt
+def api_contact():
+    """JSON version of /contact for the React UI's contact form. Same
+    send_contact_email() helper as the Jinja form above — one code path,
+    two entry points, so behavior can't drift between the two frontends."""
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip()
+    subject = (data.get("subject") or "").strip() or "Portfolio contact"
+    message = (data.get("message") or "").strip()
+
+    if not name or not email or not message:
+        return jsonify({"ok": False, "error": "Please fill in name, email, and message."}), 400
+    if len(message) > 4000:
+        return jsonify({"ok": False, "error": "Message is too long."}), 400
+
+    sent, send_error, configured = send_contact_email(name, email, subject, message)
+
+    if sent:
+        return jsonify({"ok": True, "message": "Thanks — your message was sent. I will reply by email."})
+    if not configured:
+        return jsonify({
+            "ok": False,
+            "error": "Message saved, but email isn't configured on the server yet.",
+        }), 200
+    return jsonify({
+        "ok": False,
+        "error": "Message saved, but sending the email failed. Please try again shortly.",
+    }), 200
 
 
 @app.route("/about")
