@@ -340,7 +340,7 @@ def chat():
         messages.append({"role": "user", "content": user_message})
 
         response = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=messages,
             max_tokens=500,
             temperature=0.7
